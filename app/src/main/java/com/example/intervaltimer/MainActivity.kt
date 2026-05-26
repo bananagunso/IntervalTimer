@@ -97,10 +97,15 @@ class MainActivity : ComponentActivity() {
 
                 val allSavedMenus = remember {
                     val json = sharedPreferences.getString("saved_menus", null)
-                    val menuList = if (json != null) {
-                        val type = object : TypeToken<List<TrainingMenu>>() {}.type
-                        gson.fromJson<List<TrainingMenu>>(json, type)
-                    } else {
+                    val menuList = try {
+                        if (json != null) {
+                            val type = object : TypeToken<List<TrainingMenu>>() {}.type
+                            gson.fromJson<List<TrainingMenu>>(json, type)
+                        } else {
+                            emptyList()
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
                         emptyList()
                     }
                     mutableStateListOf<TrainingMenu>().apply { addAll(menuList) }
@@ -113,7 +118,7 @@ class MainActivity : ComponentActivity() {
 
                 LaunchedEffect(presetNames.toList()) {
                     val json = gson.toJson(presetNames.toList())
-                    sharedPreferences.edit {putString("saved_menus", json)}
+                    sharedPreferences.edit {putString("preset_names", json)}
                 }
 
                 Surface(
@@ -695,8 +700,14 @@ fun NextStepRow(step: TimerStep, label: String) {
 @Composable
 fun TotalProgressHeader(remaining: Int, total: Int) {
     Column(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        val progress =
+            if (total > 0) {
+                (total - remaining).toFloat() / total.toFloat()
+            } else {
+                0f
+            }
         LinearProgressIndicator(
-            progress = { (total - remaining).toFloat() / total.toFloat() },
+            progress = { progress },
             modifier = Modifier.fillMaxWidth().height(10.dp).clip(CircleShape),
             color = Color.Cyan,
             trackColor = DarkSurfaceColor
@@ -725,7 +736,7 @@ fun MainStepContent(step: TimerStep?, timeLeft: Int, isRunning: Boolean) {
                     toneG.startTone(ToneGenerator.TONE_PROP_BEEP, 15)
                     kotlinx.coroutines.delay(60L)
                     isPulse = false
-                    kotlinx.coroutines.delay(tempoInterval - 60L)
+                    kotlinx.coroutines.delay(maxOf(tempoInterval - 60L, 1L))
                 }
             } finally {
                 toneG.release()
