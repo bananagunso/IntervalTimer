@@ -44,13 +44,15 @@ import android.view.WindowManager
 import android.content.Context
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
-
+import androidx.compose.ui.res.stringResource
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import android.widget.Toast
 import android.content.ClipboardManager
 import android.content.ClipData
 import androidx.compose.ui.draw.alpha
+import androidx.core.content.edit
+import java.util.Locale
 
 data class TimerStep(
     val name: String,
@@ -78,7 +80,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val context = LocalContext.current
                 val sharedPreferences = remember {
-                    context.getSharedPreferences("interval_timer_prefs", Context.MODE_PRIVATE)
+                    context.getSharedPreferences("interval_timer_prefs", MODE_PRIVATE)
                 }
                 val gson = remember { Gson() }
 
@@ -86,7 +88,7 @@ class MainActivity : ComponentActivity() {
                     val json = sharedPreferences.getString("preset_names", null)
                     val presets = if (json != null) {
                         val type = object : TypeToken<List<String>>() {}.type
-                        gson.fromJson<List<String>>(json, type)
+                        gson.fromJson(json, type)
                     } else {
                         listOf("ウォームアップ", "メイン", "ファスト", "トルク", "レスト", "クールダウン")
                     }
@@ -106,12 +108,12 @@ class MainActivity : ComponentActivity() {
 
                 LaunchedEffect(allSavedMenus.toList()) {
                     val json = gson.toJson(allSavedMenus.toList())
-                    sharedPreferences.edit().putString("saved_menus", json).apply()
+                    sharedPreferences.edit {putString("saved_menus", json)}
                 }
 
                 LaunchedEffect(presetNames.toList()) {
                     val json = gson.toJson(presetNames.toList())
-                    sharedPreferences.edit().putString("preset_names", json).apply()
+                    sharedPreferences.edit {putString("saved_menus", json)}
                 }
 
                 Surface(
@@ -199,14 +201,14 @@ fun TopScreen(onNavigateToAdd: () -> Unit, onNavigateToRunning: () -> Unit, onNa
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("インターバルタイマー", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
+        Text(text = stringResource(id = R.string.title_interval_timer), fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
         Spacer(modifier = Modifier.height(48.dp))
         Button(
             onClick = onNavigateToAdd,
             modifier = Modifier.fillMaxWidth().height(64.dp),
             colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor, contentColor = Color.White)
         ) {
-            Text("1. インターバル作成", fontSize = 18.sp)
+            Text(text = stringResource(id = R.string.btn_create_menu), fontSize = 18.sp)
         }
         Spacer(modifier = Modifier.height(16.dp))
         Button(
@@ -214,7 +216,7 @@ fun TopScreen(onNavigateToAdd: () -> Unit, onNavigateToRunning: () -> Unit, onNa
             modifier = Modifier.fillMaxWidth().height(64.dp),
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = Color.White)
         ) {
-            Text("2. トレーニング開始", fontSize = 18.sp)
+            Text(text = stringResource(id = R.string.btn_start_training), fontSize = 18.sp)
         }
         Spacer(modifier = Modifier.height(16.dp))
         Button(
@@ -222,7 +224,7 @@ fun TopScreen(onNavigateToAdd: () -> Unit, onNavigateToRunning: () -> Unit, onNa
             modifier = Modifier.fillMaxWidth().height(64.dp),
             colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor, contentColor = Color.White)
         ) {
-            Text("3. プリセット編集", fontSize = 18.sp)
+            Text(text = stringResource(id = R.string.btn_edit_presets), fontSize = 18.sp)
         }
     }
 }
@@ -263,14 +265,14 @@ fun TimerScreen(
     var selectedColor by remember { mutableStateOf(colorOptions[0]) }
 
     Column(modifier = Modifier.fillMaxSize().background(DarkBackgroundColor).padding(16.dp)) {
-        Text(if (editMenuIndex == -1) "インターバル作成" else "メニュー編集", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
+        Text(text = stringResource(id = if (editMenuIndex == -1) R.string.title_create_menu else R.string.title_edit_menu), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
         Spacer(modifier = Modifier.height(8.dp))
 
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
                 value = inputName,
                 onValueChange = { inputName = it },
-                label = { Text("ステップ名") },
+                label = { Text(text = stringResource(id = R.string.hint_step_name)) },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = Color.White,
@@ -303,7 +305,7 @@ fun TimerScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Text("ラベルの色", fontSize = 14.sp, color = Color.Gray)
+        Text(text = stringResource(id = R.string.label_color), fontSize = 14.sp, color = Color.Gray)
         Row(
             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -339,7 +341,7 @@ fun TimerScreen(
             OutlinedTextField(
                 value = inputSeconds,
                 onValueChange = { inputSeconds = it },
-                label = { Text("秒数") },
+                label = { Text(text = stringResource(id = R.string.hint_seconds)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.weight(1f),
                 colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
@@ -347,7 +349,7 @@ fun TimerScreen(
             OutlinedTextField(
                 value = inputTempo,
                 onValueChange = { inputTempo = it },
-                label = { Text("RPM") },
+                label = { Text(text = stringResource(id = R.string.hint_tempo)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.weight(1f),
                 colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
@@ -369,7 +371,7 @@ fun TimerScreen(
             },
             modifier = Modifier.padding(top = 8.dp).fillMaxWidth()
         ) {
-            Text("ステップ追加")
+            Text(text = stringResource(id = R.string.btn_add_step))
         }
 
         LazyColumn(modifier = Modifier.weight(1f).padding(vertical = 8.dp)) {
@@ -419,7 +421,7 @@ fun TimerScreen(
         OutlinedTextField(
             value = menuName,
             onValueChange = { menuName = it },
-            label = { Text("メニュー名") },
+            label = { Text(text = stringResource(id = R.string.hint_menu_name)) },
             modifier = Modifier.fillMaxWidth(),
             colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
         )
@@ -436,7 +438,7 @@ fun TimerScreen(
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(if (editMenuIndex == -1) "インターバルを保存" else "変更を上書き保存")
+            Text(text = stringResource(id = if (editMenuIndex == -1) R.string.btn_save_menu else R.string.btn_overwrite_menu))
         }
     }
 }
@@ -445,13 +447,13 @@ fun TimerScreen(
 fun PresetEditScreen(presetNames: SnapshotStateList<String>) {
     var newPreset by remember { mutableStateOf("") }
     Column(modifier = Modifier.fillMaxSize().background(DarkBackgroundColor).padding(16.dp)) {
-        Text("プリセット編集", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
+        Text(text = stringResource(id = R.string.title_preset_edit), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
         Spacer(modifier = Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             OutlinedTextField(
                 value = newPreset,
                 onValueChange = { newPreset = it },
-                label = { Text("新しい名前") },
+                label = { Text(text = stringResource(id = R.string.hint_new_preset_name)) },
                 modifier = Modifier.weight(1f),
                 colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
             )
@@ -460,7 +462,7 @@ fun PresetEditScreen(presetNames: SnapshotStateList<String>) {
                 onClick = { if(newPreset.isNotBlank()){ presetNames.add(newPreset); newPreset="" } },
                 modifier = Modifier.height(56.dp)
             ) {
-                Text("追加")
+                Text(text = stringResource(id = R.string.btn_add))
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -482,10 +484,10 @@ fun PresetEditScreen(presetNames: SnapshotStateList<String>) {
 
 @Composable
 fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
-    var currentStepIndex by remember { mutableStateOf(0) }
-    var timeLeft by remember { mutableStateOf(steps.getOrNull(0)?.durationSeconds ?: 0) }
+    var currentStepIndex by remember { mutableIntStateOf(0) }
+    var timeLeft by remember { mutableIntStateOf(steps.getOrNull(0)?.durationSeconds ?: 0) }
     var isRunning by remember { mutableStateOf(true) }
-    var startDelayLeft by remember { mutableStateOf(5) }
+    var startDelayLeft by remember { mutableIntStateOf(5) }
     var isStarting by remember { mutableStateOf(true) }
     var isFinished by remember { mutableStateOf(false) }
 
@@ -587,7 +589,7 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
             ) {
                 if (isStarting) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("準備してください", fontSize = 24.sp, color = Color.Gray)
+                        Text(text = stringResource(id = R.string.label_preparing), fontSize = 24.sp, color = Color.Gray)
                         Text("$startDelayLeft", fontSize = 120.sp, fontWeight = FontWeight.Black, color = if (isRunning) Color.Red else Color.Gray)
                     }
                 } else {
@@ -644,12 +646,12 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
 fun FinishedScreen(onDone: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize().background(DarkBackgroundColor), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("お疲れさまでした！", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text(text = stringResource(id = R.string.finished_message), fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.White)
             Spacer(modifier = Modifier.height(16.dp))
             Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(100.dp), tint = Color(0xFF81C784))
             Spacer(modifier = Modifier.height(48.dp))
             Button(onClick = onDone, modifier = Modifier.fillMaxWidth(0.6f).height(56.dp), colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)) {
-                Text("戻る", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                Text(text = stringResource(id = R.string.btn_back), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
             }
         }
     }
@@ -671,9 +673,9 @@ fun NextStepsPreview(steps: List<TimerStep>, currentIndex: Int, isVisible: Boole
     Column(modifier = Modifier.fillMaxWidth().height(160.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         if (isVisible) {
             val next1 = steps.getOrNull(currentIndex + 1)
-            if (next1 != null) NextStepRow(step = next1, label = "次") else Spacer(modifier = Modifier.height(68.dp))
+            if (next1 != null) NextStepRow(step = next1, label = stringResource(id = R.string.label_next)) else Spacer(modifier = Modifier.height(68.dp))
             val next2 = steps.getOrNull(currentIndex + 2)
-            if (next2 != null) NextStepRow(step = next2, label = "その次") else Spacer(modifier = Modifier.height(68.dp))
+            if (next2 != null) NextStepRow(step = next2, label = stringResource(id = R.string.label_after_that) ) else Spacer(modifier = Modifier.height(68.dp))
         } else {
             Spacer(modifier = Modifier.fillMaxSize())
         }
@@ -685,7 +687,7 @@ fun NextStepRow(step: TimerStep, label: String) {
     Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))) {
         Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("$label: ${step.name}", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White.copy(alpha = 0.9f), modifier = Modifier.weight(1f))
-            Text("${step.tempo} RPM / ${step.durationSeconds}s", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color.White.copy(alpha = 0.8f))
+            Text(text = stringResource(id = R.string.label_tempo_and_seconds, step.tempo, step.durationSeconds), fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color.White.copy(alpha = 0.8f))
         }
     }
 }
@@ -700,10 +702,10 @@ fun TotalProgressHeader(remaining: Int, total: Int) {
             trackColor = DarkSurfaceColor
         )
         Spacer(modifier = Modifier.height(12.dp))
-        Text("全体の残り時間", fontSize = 12.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+        Text(text = stringResource(id = R.string.label_total_remaining), fontSize = 12.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
         Row(verticalAlignment = Alignment.Bottom) {
-            Text(String.format("%02d:%02d", remaining / 60, remaining % 60), fontSize = 32.sp, fontWeight = FontWeight.Black, color = Color.White)
-            Text(String.format(" / %02d:%02d", total / 60, total % 60), fontSize = 18.sp, fontWeight = FontWeight.Medium, color = Color.Gray, modifier = Modifier.padding(bottom = 4.dp, start = 4.dp))
+            Text(String.format(Locale.US, "%02d:%02d", remaining / 60, remaining % 60), fontSize = 32.sp, fontWeight = FontWeight.Black, color = Color.White)
+            Text(String.format(Locale.US, " / %02d:%02d", total / 60, total % 60), fontSize = 18.sp, fontWeight = FontWeight.Medium, color = Color.Gray, modifier = Modifier.padding(bottom = 4.dp, start = 4.dp))
         }
     }
 }
@@ -769,7 +771,7 @@ fun MenuManageScreen(menu: TrainingMenu, onNavigateToRunning: () -> Unit, onNavi
 
         // ステップ一覧（ここは変更なし）
         if (menu.steps.isEmpty()) {
-            Text("ステップがありません。", color = Color.Gray)
+            Text(text = stringResource(id = R.string.msg_no_steps), color = Color.Gray)
         } else {
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(menu.steps) { step ->
@@ -781,7 +783,7 @@ fun MenuManageScreen(menu: TrainingMenu, onNavigateToRunning: () -> Unit, onNavi
                             Box(modifier = Modifier.size(12.dp).background(step.color, shape = CircleShape))
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(step.name, modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold, color = Color.White)
-                            Text("${step.durationSeconds}s / ${step.tempo}RPM", fontSize = 14.sp, color = Color.LightGray)
+                            Text(text = stringResource(id = R.string.label_step_info, step.durationSeconds, step.tempo), fontSize = 14.sp, color = Color.LightGray)
                         }
                     }
                 }
@@ -797,7 +799,7 @@ fun MenuManageScreen(menu: TrainingMenu, onNavigateToRunning: () -> Unit, onNavi
             enabled = menu.steps.isNotEmpty(),
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
-            Text("トレーニング開始", fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
+            Text(text = stringResource(id = R.string.btn_start_training_long), fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -809,14 +811,14 @@ fun MenuManageScreen(menu: TrainingMenu, onNavigateToRunning: () -> Unit, onNavi
                 modifier = Modifier.weight(1f).height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)
             ) {
-                Text("編集", color = Color.White)
+                Text(text = stringResource(id = R.string.btn_edit), color = Color.White)
             }
             Button(
                 onClick = onDeleteMenu,
                 modifier = Modifier.weight(1f).height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC62828))
             ) {
-                Text("削除", color = Color.White)
+                Text(text = stringResource(id = R.string.btn_delete), color = Color.White)
             }
         }
 
@@ -829,16 +831,16 @@ fun MenuManageScreen(menu: TrainingMenu, onNavigateToRunning: () -> Unit, onNavi
                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 val clip = ClipData.newPlainText("IntervalTimerSingleMenu", jsonText)
                 clipboard.setPrimaryClip(clip)
-                Toast.makeText(context, "「${menu.name}」をコピーしました！", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.msg_copied, menu.name), Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth().height(56.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))
         ) {
-            Text("このメニューをシェア（コピー）", color = Color.White)
+            Text(text = stringResource(id = R.string.btn_share_menu), color = Color.White)
         }
 
         TextButton(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
-            Text("戻る", color = Color.Gray)
+            Text(text = stringResource(id = R.string.btn_back), color = Color.Gray)
         }
     }
 }
@@ -848,35 +850,38 @@ fun MenuListScreen(menus: SnapshotStateList<TrainingMenu>, onSelectMenu: (Int) -
     val gson = remember { Gson() }
 
     Column(modifier = Modifier.fillMaxSize().background(DarkBackgroundColor).padding(16.dp)) {
-        Text("トレーニングを選択", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
+        Text(text = stringResource(id = R.string.title_select_menu), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
         Spacer(modifier = Modifier.height(8.dp))
+
+        val invalidDataMessage = stringResource(R.string.err_invalid_data)
+        val errorFormatMessage = stringResource(R.string.err_format_error)
+        val errClipboardEmptyMessage = stringResource(R.string.err_clipboard_empty)
 
         Button(
             onClick = {
                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 val clipItem = clipboard.primaryClip?.getItemAt(0)
                 val jsonText = clipItem?.text?.toString()
-
                 if (!jsonText.isNullOrBlank()) {
                     try {
                         val importedMenu = gson.fromJson(jsonText, TrainingMenu::class.java)
                         if (importedMenu != null && importedMenu.name.isNotBlank()) {
                             menus.add(importedMenu)
-                            Toast.makeText(context, "「${importedMenu.name}」を取り込みました！", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, context.getString(R.string.msg_imported, importedMenu.name), Toast.LENGTH_SHORT).show()
                         } else {
-                            Toast.makeText(context, "有効なメニューデータではありません", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, invalidDataMessage, Toast.LENGTH_SHORT).show()
                         }
-                    } catch (e: Exception) {
-                        Toast.makeText(context, "データの形式が正しくありません", Toast.LENGTH_SHORT).show()
+                    } catch (_: Exception) {
+                        Toast.makeText(context, errorFormatMessage, Toast.LENGTH_SHORT).show()
                     }
                 } else {
-                    Toast.makeText(context, "クリップボードが空っぽです", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, errClipboardEmptyMessage, Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF6C00))
         ) {
-            Text("クリップボードからメニューを追加", color = Color.White)
+            Text(text = stringResource(id = R.string.btn_import_clipboard), color = Color.White)
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -889,7 +894,7 @@ fun MenuListScreen(menus: SnapshotStateList<TrainingMenu>, onSelectMenu: (Int) -
                 ) {
                     Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                         Text(menu.name, fontSize = 20.sp, modifier = Modifier.weight(1f), color = Color.White)
-                        Text("${menu.steps.size} ステップ", fontSize = 14.sp, color = Color.Gray)
+                        Text(text = stringResource(R.string.label_steps_count, menu.steps.size), fontSize = 14.sp, color = Color.Gray)
                         Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color.White)
                     }
                 }
@@ -900,7 +905,7 @@ fun MenuListScreen(menus: SnapshotStateList<TrainingMenu>, onSelectMenu: (Int) -
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)
         ) {
-            Text("戻る", color = Color.White)
+            Text(text = stringResource(id = R.string.btn_back), color = Color.White)
         }
     }
 }

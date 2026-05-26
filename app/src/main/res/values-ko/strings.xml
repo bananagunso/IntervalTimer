@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">IntervalTimer</string>
+    <string name="title_interval_timer">인터벌 타이머</string>
+    <string name="btn_create_menu">1. 인터벌 만들기</string>
+    <string name="btn_start_training">2. 트레이닝 시작</string>
+    <string name="btn_edit_presets">3. 프리셋 편집</string>
+    <string name="title_create_menu">인터벌 만들기</string>
+    <string name="title_edit_menu">메뉴 편집</string>
+    <string name="hint_step_name">스텝 이름</string>
+    <string name="label_color">라벨 색상</string>
+    <string name="hint_seconds">초</string>
+    <string name="hint_tempo">RPM</string>
+    <string name="btn_add_step">스텝 추가</string>
+    <string name="hint_menu_name">메뉴 이름</string>
+    <string name="btn_save_menu">인터벌 저장</string>
+    <string name="btn_overwrite_menu">변경사항 저장</string>
+    <string name="title_preset_edit">프리셋 편집</string>
+    <string name="hint_new_preset_name">새 이름</string>
+    <string name="btn_add">추가</string>
+    <string name="label_preparing">준비하세요</string>
+    <string name="label_total_remaining">전체 남은 시간</string>
+    <string name="label_next">다음</string>
+    <string name="label_after_that">그 다음</string>
+    <string name="finished_message">수고하셨습니다!</string>
+    <string name="msg_no_steps">스텝이 없습니다.</string>
+    <string name="btn_start_training_long">트레이닝 시작</string>
+    <string name="btn_edit">편집</string>
+    <string name="btn_delete">삭제</string>
+    <string name="btn_share_menu">메뉴 공유 (복사)</string>
+    <string name="msg_copied">"%1$s" 복사되었습니다!</string>
+    <string name="title_select_menu">트레이닝 선택</string>
+    <string name="btn_import_clipboard">클립보드에서 메뉴 추가</string>
+    <string name="msg_imported">"%1$s" 가져왔습니다!</string>
+    <string name="err_invalid_data">유효한 메뉴 데이터가 아닙니다</string>
+    <string name="err_format_error">데이터 형식이 올바르지 않습니다</string>
+    <string name="err_clipboard_empty">클립보드가 비어 있습니다</string>
+    <string name="label_steps_count">%1$d 스텝</string>
+    <string name="btn_back">뒤로</string>
+    <string name="label_tempo_and_seconds">%1$d RPM / %2$ds</string>
+    <string name="label_step_info">%1$ds / %2$dRPM</string>
+</resources>
