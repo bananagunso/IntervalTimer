@@ -61,7 +61,12 @@ data class TimerStep(
     val durationSeconds: Int,
     val tempo: Int,
     val color: Color
-)
+) {
+    // 【ここがポイント】
+    // 外部からは「分」と「秒」として扱えるようにする
+    val minutes: Int get() = durationSeconds / 60
+    val seconds: Int get() = durationSeconds % 60
+}
 
 data class TrainingMenu(
     val name: String,
@@ -244,11 +249,13 @@ fun TimerScreen(
     onSaveFinished: () -> Unit
 ) {
     var inputName by remember { mutableStateOf("") }
-    var inputSeconds by remember { mutableStateOf("60") }
     var inputTempo by remember { mutableStateOf("85") }
+    var inputMinutes by remember { mutableIntStateOf(0) }
+    var inputSeconds by remember { mutableIntStateOf(0) }
     var expanded by remember { mutableStateOf(false) }
     val tempSteps = remember { mutableStateListOf<TimerStep>() }
     var menuName by remember { mutableStateOf("新規トレーニング") }
+    var showTimePicker by remember { mutableStateOf(false) }
     var showTempoPicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -345,14 +352,13 @@ fun TimerScreen(
         }
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedTextField(
-                value = inputSeconds,
-                onValueChange = { inputSeconds = it },
-                label = { Text(text = stringResource(id = R.string.hint_seconds)) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.weight(1f),
-                colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
-            )
+            OutlinedButton(
+                onClick = { showTimePicker = true },
+                modifier = Modifier.weight(1f).height(56.dp),
+                shape = OutlinedTextFieldDefaults.shape
+            ) {
+                Text(text = "${inputMinutes}分 ${inputSeconds}秒", color = Color.White)
+            }
             OutlinedButton(
                 onClick = { showTempoPicker = true },
                 modifier = Modifier.weight(1f).height(56.dp),
@@ -362,13 +368,29 @@ fun TimerScreen(
             }
         }
 
+        if (showTimePicker) {
+            ModalBottomSheet(
+                onDismissRequest = { showTimePicker = false },
+                containerColor = DarkSurfaceColor // RPMと同じ色
+            ) {
+                TimeDrumPicker(
+                    initialMinutes = inputMinutes,
+                    initialSeconds = inputSeconds,
+                    onTimeSelected = { m, s ->
+                        inputMinutes = m
+                        inputSeconds = s
+                    }
+                )
+            }
+        }
+
         if (showTempoPicker) {
             ModalBottomSheet(
                 onDismissRequest = { showTempoPicker = false },
                 containerColor = DarkSurfaceColor
             ) {
                 RpmDrumPicker(
-                    initialRpm = 30, // または現在の設定値
+                    initialRpm = 85, // または現在の設定値
                     onRpmSelected = { selectedRpm ->
                         inputTempo = selectedRpm.toString() // ここで親の状態を更新
                     }
@@ -379,10 +401,13 @@ fun TimerScreen(
         Button(
             onClick = {
                 if (inputName.isNotBlank()) {
+                    // ここで計算！
+                    val totalSeconds = (inputMinutes * 60) + inputSeconds
+
                     tempSteps.add(
                         TimerStep(
                             name = inputName,
-                            durationSeconds = inputSeconds.toIntOrNull() ?: 0,
+                            durationSeconds = totalSeconds, // 計算済みの合計値を渡す
                             tempo = inputTempo.toIntOrNull() ?: 0,
                             color = selectedColor
                         )
@@ -404,8 +429,10 @@ fun TimerScreen(
                         Box(modifier = Modifier.size(12.dp).background(step.color, shape = CircleShape))
                         Spacer(modifier = Modifier.width(8.dp))
                         Column(modifier = Modifier.weight(1f)) {
+                            val minutes = step.durationSeconds / 60
+                            val seconds = step.durationSeconds % 60
                             Text(step.name, fontWeight = FontWeight.Bold, color = Color.White)
-                            Text("${step.durationSeconds}s / ${step.tempo}RPM", fontSize = 14.sp, color = Color.LightGray)
+                            Text(text = String.format("%02d:%02d", minutes, seconds)+" / ${step.tempo}RPM", fontSize = 14.sp, color = Color.LightGray)
                         }
 
                         if (index > 0) {
@@ -464,6 +491,39 @@ fun TimerScreen(
 }
 
 @Composable
+fun TimeDrumPicker(
+    initialMinutes: Int,
+    initialSeconds: Int,
+    onTimeSelected: (minutes: Int, seconds: Int) -> Unit
+) {
+    var minutes by remember { mutableIntStateOf(initialMinutes) }
+    var seconds by remember { mutableIntStateOf(initialSeconds) }
+
+    Row(
+        modifier = Modifier.fillMaxWidth().height(150.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically // 【重要】これで縦位置が揃います
+    ) {
+        // 分エリア（ドラム＋文字）
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            DigitWheel(0..60, minutes) {
+                minutes = it
+                onTimeSelected(minutes, seconds)
+            }
+            Text("分", color = Color.White, modifier = Modifier.padding(start = 4.dp))
+        }
+
+        // 秒エリア（ドラム＋文字）
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 16.dp)) {
+            DigitWheel(0..59, seconds) {
+                seconds = it
+                onTimeSelected(minutes, seconds)
+            }
+            Text("秒", color = Color.White, modifier = Modifier.padding(start = 4.dp))
+        }
+    }
+}
+@Composable
 fun RpmDrumPicker(
     initialRpm: Int,
     onRpmSelected: (Int) -> Unit
@@ -491,7 +551,7 @@ fun RpmDrumPicker(
 }
 
 @Composable
-fun DigitWheel(range: IntRange, value: Int, onValueChange: (Int) -> Unit) {
+fun DigitWheel(range: IntRange, value: Int, modifier: Modifier = Modifier, onValueChange: (Int) -> Unit) {
     // 1. スクロール状態を管理する state を作成
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = value)
     // 2. スナップ（ピタッと止まる）動作を定義
@@ -506,7 +566,7 @@ fun DigitWheel(range: IntRange, value: Int, onValueChange: (Int) -> Unit) {
     LazyColumn(
         state = listState, // 3. state を紐付け
         flingBehavior = flingBehavior, // 4. ここに追加
-        modifier = Modifier.width(60.dp).height(150.dp),
+        modifier = modifier.height(150.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         contentPadding = PaddingValues(vertical = 50.dp) // 中央に合わせるパディング
     ) {
@@ -767,7 +827,9 @@ fun NextStepRow(step: TimerStep, label: String) {
     Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))) {
         Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("$label: ${step.name}", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White.copy(alpha = 0.9f), modifier = Modifier.weight(1f))
-            Text(text = stringResource(id = R.string.label_tempo_and_seconds, step.tempo, step.durationSeconds), fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color.White.copy(alpha = 0.8f))
+            val minutes = step.durationSeconds / 60
+            val seconds = step.durationSeconds % 60
+            Text(text = stringResource(id = R.string.label_tempo_and_seconds, step.tempo, minutes, seconds), fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color.White.copy(alpha = 0.8f))
         }
     }
 }
@@ -841,7 +903,11 @@ fun MainStepContent(step: TimerStep?, timeLeft: Int, isRunning: Boolean) {
             Spacer(modifier = Modifier.height(8.dp))
             Text("${step.tempo} RPM", fontSize = 42.sp, fontWeight = FontWeight.Black, color = contentColor)
             Spacer(modifier = Modifier.height(8.dp))
-            Text("$timeLeft / ${step.durationSeconds}s", fontSize = 42.sp, fontWeight = FontWeight.ExtraBold, color = contentColor)
+            val minutes = step.durationSeconds / 60
+            val seconds = step.durationSeconds % 60
+            val timeleft_minutes = timeLeft / 60
+            val timeleft_seconds = timeLeft % 60
+            Text(text = String.format("%02d:%02d / %02d:%02d", timeleft_minutes, timeleft_seconds, minutes, seconds), fontSize = 42.sp, fontWeight = FontWeight.ExtraBold, color = contentColor)
         }
     }
 }
@@ -869,7 +935,9 @@ fun MenuManageScreen(menu: TrainingMenu, onNavigateToRunning: () -> Unit, onNavi
                             Box(modifier = Modifier.size(12.dp).background(step.color, shape = CircleShape))
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(step.name, modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold, color = Color.White)
-                            Text(text = stringResource(id = R.string.label_step_info, step.durationSeconds, step.tempo), fontSize = 14.sp, color = Color.LightGray)
+                            val minutes = step.durationSeconds / 60
+                            val seconds = step.durationSeconds % 60
+                            Text(text = stringResource(id = R.string.label_step_info, minutes, seconds, step.tempo), fontSize = 14.sp, color = Color.LightGray)
                         }
                     }
                 }
