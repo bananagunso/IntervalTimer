@@ -50,6 +50,8 @@ import com.google.gson.reflect.TypeToken
 import android.widget.Toast
 import android.content.ClipboardManager
 import android.content.ClipData
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.ui.draw.alpha
 import androidx.core.content.edit
 import java.util.Locale
@@ -247,6 +249,7 @@ fun TimerScreen(
     var expanded by remember { mutableStateOf(false) }
     val tempSteps = remember { mutableStateListOf<TimerStep>() }
     var menuName by remember { mutableStateOf("新規トレーニング") }
+    var showTempoPicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         if (editMenuIndex in allSavedMenus.indices) {
@@ -350,14 +353,27 @@ fun TimerScreen(
                 modifier = Modifier.weight(1f),
                 colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
             )
-            OutlinedTextField(
-                value = inputTempo,
-                onValueChange = { inputTempo = it },
-                label = { Text(text = stringResource(id = R.string.hint_tempo)) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.weight(1f),
-                colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
-            )
+            OutlinedButton(
+                onClick = { showTempoPicker = true },
+                modifier = Modifier.weight(1f).height(56.dp),
+                shape = OutlinedTextFieldDefaults.shape
+            ) {
+                Text(text = "$inputTempo RPM", color = Color.White)
+            }
+        }
+
+        if (showTempoPicker) {
+            ModalBottomSheet(
+                onDismissRequest = { showTempoPicker = false },
+                containerColor = DarkSurfaceColor
+            ) {
+                RpmDrumPicker(
+                    initialRpm = 30, // または現在の設定値
+                    onRpmSelected = { selectedRpm ->
+                        inputTempo = selectedRpm.toString() // ここで親の状態を更新
+                    }
+                )
+            }
         }
 
         Button(
@@ -447,6 +463,66 @@ fun TimerScreen(
     }
 }
 
+@Composable
+fun RpmDrumPicker(
+    initialRpm: Int,
+    onRpmSelected: (Int) -> Unit
+) {
+    // 桁ごとの状態（最初は初期値から計算）
+    var hundreds by remember { mutableIntStateOf((initialRpm / 100) % 10) }
+    var tens by remember { mutableIntStateOf((initialRpm / 10) % 10) }
+    var ones by remember { mutableIntStateOf(initialRpm % 10) }
+
+    // 値が変更されたら親に通知
+    LaunchedEffect(hundreds, tens, ones) {
+        val newRpm = (hundreds * 100) + (tens * 10) + ones
+        // 30未満にならないように制限
+        if (newRpm >= 30) onRpmSelected(newRpm)
+    }
+
+    Row(modifier = Modifier.fillMaxWidth().height(150.dp), horizontalArrangement = Arrangement.Center) {
+        // 百の位 (0-2)
+        DigitWheel(range = 0..2, value = hundreds) { hundreds = it }
+        // 十の位 (0-9)
+        DigitWheel(range = 0..9, value = tens) { tens = it }
+        // 一の位 (0-9)
+        DigitWheel(range = 0..9, value = ones) { ones = it }
+    }
+}
+
+@Composable
+fun DigitWheel(range: IntRange, value: Int, onValueChange: (Int) -> Unit) {
+    // 1. スクロール状態を管理する state を作成
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = value)
+    // 2. スナップ（ピタッと止まる）動作を定義
+    val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
+    LaunchedEffect(listState.isScrollInProgress) {
+        if (!listState.isScrollInProgress) {
+            val centerIndex = listState.firstVisibleItemIndex
+            onValueChange(range.toList()[centerIndex])
+        }
+    }
+    // LazyColumn を使ってドラムのようにスクロール
+    LazyColumn(
+        state = listState, // 3. state を紐付け
+        flingBehavior = flingBehavior, // 4. ここに追加
+        modifier = Modifier.width(60.dp).height(150.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        contentPadding = PaddingValues(vertical = 50.dp) // 中央に合わせるパディング
+    ) {
+        items(range.toList()) { digit ->
+            val isSelected = (digit == value)
+            Text(
+                text = digit.toString(),
+                fontSize = if (isSelected) 32.sp else 20.sp,
+                color = if (isSelected) Color.White else Color.Gray,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .clickable { onValueChange(digit) }
+            )
+        }
+    }
+}
 @Composable
 fun PresetEditScreen(presetNames: SnapshotStateList<String>) {
     var newPreset by remember { mutableStateOf("") }
