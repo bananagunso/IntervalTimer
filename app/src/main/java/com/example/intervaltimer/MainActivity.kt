@@ -104,8 +104,7 @@ class MainActivity : ComponentActivity() {
                         } else {
                             emptyList()
                         }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
+                    } catch (_: Exception) {
                         emptyList()
                     }
                     mutableStateListOf<TrainingMenu>().apply { addAll(menuList) }
