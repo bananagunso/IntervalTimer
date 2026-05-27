@@ -42,8 +42,6 @@ import androidx.compose.ui.platform.LocalContext
 import android.app.Activity
 import android.view.WindowManager
 import android.content.Context
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.res.stringResource
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -61,12 +59,7 @@ data class TimerStep(
     val durationSeconds: Int,
     val tempo: Int,
     val color: Color
-) {
-    // 【ここがポイント】
-    // 外部からは「分」と「秒」として扱えるようにする
-    val minutes: Int get() = durationSeconds / 60
-    val seconds: Int get() = durationSeconds % 60
-}
+)
 
 data class TrainingMenu(
     val name: String,
@@ -625,9 +618,9 @@ fun PresetEditScreen(presetNames: SnapshotStateList<String>) {
 @Composable
 fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
     var currentStepIndex by remember { mutableIntStateOf(0) }
-    var timeLeft by remember { mutableIntStateOf(steps.getOrNull(0)?.durationSeconds ?: 0) }
+    var remainingTime by remember { mutableIntStateOf(steps.getOrNull(0)?.durationSeconds ?: 0) }
     var isRunning by remember { mutableStateOf(true) }
-    var startDelayLeft by remember { mutableIntStateOf(5) }
+    var startDelay by remember { mutableIntStateOf(5) }
     var isStarting by remember { mutableStateOf(true) }
     var isFinished by remember { mutableStateOf(false) }
 
@@ -641,10 +634,10 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
     }
 
     val totalMenuSeconds = remember(steps) { steps.sumOf { it.durationSeconds } }
-    val secondsPassed = remember(currentStepIndex, timeLeft, isStarting) {
+    val secondsPassed = remember(currentStepIndex, remainingTime, isStarting) {
         if (isStarting) 0 else {
             steps.take(currentStepIndex).sumOf { it.durationSeconds } +
-                    ((steps.getOrNull(currentStepIndex)?.durationSeconds ?: 0) - timeLeft)
+                    ((steps.getOrNull(currentStepIndex)?.durationSeconds ?: 0) - remainingTime)
         }
     }
     val totalRemainingSeconds = totalMenuSeconds - secondsPassed
@@ -652,7 +645,7 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
     val navigateToNextStep = {
         if (currentStepIndex < steps.size - 1) {
             currentStepIndex++
-            timeLeft = steps[currentStepIndex].durationSeconds
+            remainingTime = steps[currentStepIndex].durationSeconds
         } else {
             isFinished = true
         }
@@ -660,19 +653,19 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
 
     LaunchedEffect(isStarting, isRunning) {
         if (isStarting && isRunning) {
-            while (startDelayLeft > 0) {
+            while (startDelay > 0) {
                 kotlinx.coroutines.delay(1000L)
-                if (isRunning) startDelayLeft-- else break
+                if (isRunning) startDelay-- else break
             }
-            if (startDelayLeft <= 0) isStarting = false
+            if (startDelay <= 0) isStarting = false
         }
     }
 
-    LaunchedEffect(isStarting, currentStepIndex, timeLeft, isRunning) {
+    LaunchedEffect(isStarting, currentStepIndex, remainingTime, isRunning) {
         if (!isStarting && isRunning) {
-            if (timeLeft > 0) {
+            if (remainingTime > 0) {
                 kotlinx.coroutines.delay(1000L)
-                timeLeft--
+                remainingTime--
             } else {
                 navigateToNextStep()
             }
@@ -680,7 +673,7 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
     }
 
     LaunchedEffect(currentStepIndex, isStarting) {
-        if (isStarting && startDelayLeft == 5) return@LaunchedEffect
+        if (isStarting && startDelay == 5) return@LaunchedEffect
         if (!isFinished) {
             val toneG = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
             try {
@@ -730,10 +723,10 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                 if (isStarting) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(text = stringResource(id = R.string.label_preparing), fontSize = 24.sp, color = Color.Gray)
-                        Text("$startDelayLeft", fontSize = 120.sp, fontWeight = FontWeight.Black, color = if (isRunning) Color.Red else Color.Gray)
+                        Text("$startDelay", fontSize = 120.sp, fontWeight = FontWeight.Black, color = if (isRunning) Color.Red else Color.Gray)
                     }
                 } else {
-                    MainStepContent(steps.getOrNull(currentStepIndex), timeLeft, isRunning)
+                    MainStepContent(steps.getOrNull(currentStepIndex), remainingTime, isRunning)
                 }
             }
 
@@ -859,7 +852,7 @@ fun TotalProgressHeader(remaining: Int, total: Int) {
 }
 
 @Composable
-fun MainStepContent(step: TimerStep?, timeLeft: Int, isRunning: Boolean) {
+fun MainStepContent(step: TimerStep?, remainingTime: Int, isRunning: Boolean) {
     if (step == null) return
     var isPulse by remember { mutableStateOf(false) }
     val tempoInterval = remember(step.tempo) { if (step.tempo > 0) (60000 / step.tempo).toLong() else 0L }
@@ -905,9 +898,9 @@ fun MainStepContent(step: TimerStep?, timeLeft: Int, isRunning: Boolean) {
             Spacer(modifier = Modifier.height(8.dp))
             val minutes = step.durationSeconds / 60
             val seconds = step.durationSeconds % 60
-            val timeleft_minutes = timeLeft / 60
-            val timeleft_seconds = timeLeft % 60
-            Text(text = String.format("%02d:%02d / %02d:%02d", timeleft_minutes, timeleft_seconds, minutes, seconds), fontSize = 42.sp, fontWeight = FontWeight.ExtraBold, color = contentColor)
+            val remainingTime_minutes = remainingTime / 60
+            val remainingTime_seconds = remainingTime % 60
+            Text(text = String.format("%02d:%02d / %02d:%02d", remainingTime_minutes, remainingTime_seconds, minutes, seconds), fontSize = 42.sp, fontWeight = FontWeight.ExtraBold, color = contentColor)
         }
     }
 }
