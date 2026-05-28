@@ -1,5 +1,6 @@
 package com.example.intervaltimer
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -53,6 +54,15 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.ui.draw.alpha
 import androidx.core.content.edit
 import java.util.Locale
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
+import androidx.compose.runtime.saveable.rememberSaveable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
 
 data class TimerStep(
     val name: String,
@@ -233,6 +243,7 @@ fun TopScreen(onNavigateToAdd: () -> Unit, onNavigateToRunning: () -> Unit, onNa
     }
 }
 
+@SuppressLint("DefaultLocale")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimerScreen(
@@ -241,15 +252,15 @@ fun TimerScreen(
     editMenuIndex: Int,
     onSaveFinished: () -> Unit
 ) {
-    var inputName by remember { mutableStateOf("") }
-    var inputTempo by remember { mutableStateOf("85") }
-    var inputMinutes by remember { mutableIntStateOf(0) }
-    var inputSeconds by remember { mutableIntStateOf(0) }
+    var inputName by rememberSaveable { mutableStateOf("") }
+    var inputTempo by rememberSaveable { mutableStateOf("85") }
+    var inputMinutes by rememberSaveable { mutableIntStateOf(0) }
+    var inputSeconds by rememberSaveable { mutableIntStateOf(0) }
     var expanded by remember { mutableStateOf(false) }
-    val tempSteps = remember { mutableStateListOf<TimerStep>() }
-    var menuName by remember { mutableStateOf("新規トレーニング") }
-    var showTimePicker by remember { mutableStateOf(false) }
-    var showTempoPicker by remember { mutableStateOf(false) }
+    val tempSteps = rememberSaveable { mutableStateListOf<TimerStep>() }
+    var menuName by rememberSaveable { mutableStateOf("新規トレーニング") }
+    var showTimePicker by rememberSaveable { mutableStateOf(false) }
+    var showTempoPicker by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         if (editMenuIndex in allSavedMenus.indices) {
@@ -269,7 +280,8 @@ fun TimerScreen(
         Color(0xFF673AB7),
         Color(0xFFFFFFFF),
     )
-    var selectedColor by remember { mutableStateOf(colorOptions[0]) }
+    var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
+    val selectedColor = colorOptions[selectedIndex]
 
     Column(modifier = Modifier.fillMaxSize().background(DarkBackgroundColor).padding(16.dp)) {
         Text(text = stringResource(id = if (editMenuIndex == -1) R.string.title_create_menu else R.string.title_edit_menu), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
@@ -317,8 +329,8 @@ fun TimerScreen(
             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            colorOptions.forEach { color ->
-                val isSelected = (selectedColor == color)
+            colorOptions.forEachIndexed { index, color ->
+                val isSelected = (selectedIndex == index) // インデックスで比較
 
                 Box(
                     modifier = Modifier
@@ -329,7 +341,7 @@ fun TimerScreen(
                             color = if (isSelected) Color.White else Color.Transparent,
                             shape = CircleShape
                         )
-                        .clickable { selectedColor = color },
+                        .clickable { selectedIndex = index },
                     contentAlignment = Alignment.Center
                 ) {
                     if (isSelected) {
@@ -489,8 +501,8 @@ fun TimeDrumPicker(
     initialSeconds: Int,
     onTimeSelected: (minutes: Int, seconds: Int) -> Unit
 ) {
-    var minutes by remember { mutableIntStateOf(initialMinutes) }
-    var seconds by remember { mutableIntStateOf(initialSeconds) }
+    var minutes by rememberSaveable { mutableIntStateOf(initialMinutes) }
+    var seconds by rememberSaveable { mutableIntStateOf(initialSeconds) }
 
     Row(
         modifier = Modifier.fillMaxWidth().height(150.dp),
@@ -522,9 +534,9 @@ fun RpmDrumPicker(
     onRpmSelected: (Int) -> Unit
 ) {
     // 桁ごとの状態（最初は初期値から計算）
-    var hundreds by remember { mutableIntStateOf((initialRpm / 100) % 10) }
-    var tens by remember { mutableIntStateOf((initialRpm / 10) % 10) }
-    var ones by remember { mutableIntStateOf(initialRpm % 10) }
+    var hundreds by rememberSaveable { mutableIntStateOf((initialRpm / 100) % 10) }
+    var tens by rememberSaveable { mutableIntStateOf((initialRpm / 10) % 10) }
+    var ones by rememberSaveable { mutableIntStateOf(initialRpm % 10) }
 
     // 値が変更されたら親に通知
     LaunchedEffect(hundreds, tens, ones) {
@@ -578,7 +590,7 @@ fun DigitWheel(range: IntRange, value: Int, modifier: Modifier = Modifier, onVal
 }
 @Composable
 fun PresetEditScreen(presetNames: SnapshotStateList<String>) {
-    var newPreset by remember { mutableStateOf("") }
+    var newPreset by rememberSaveable { mutableStateOf("") }
     Column(modifier = Modifier.fillMaxSize().background(DarkBackgroundColor).padding(16.dp)) {
         Text(text = stringResource(id = R.string.title_preset_edit), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
         Spacer(modifier = Modifier.height(8.dp))
@@ -617,12 +629,12 @@ fun PresetEditScreen(presetNames: SnapshotStateList<String>) {
 
 @Composable
 fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
-    var currentStepIndex by remember { mutableIntStateOf(0) }
-    var remainingTime by remember { mutableIntStateOf(steps.getOrNull(0)?.durationSeconds ?: 0) }
-    var isRunning by remember { mutableStateOf(true) }
-    var startDelay by remember { mutableIntStateOf(5) }
-    var isStarting by remember { mutableStateOf(true) }
-    var isFinished by remember { mutableStateOf(false) }
+    var currentStepIndex by rememberSaveable { mutableIntStateOf(0) }
+    var remainingTime by rememberSaveable { mutableIntStateOf(steps.getOrNull(0)?.durationSeconds ?: 0) }
+    var isRunning by rememberSaveable { mutableStateOf(true) }
+    var startDelay by rememberSaveable { mutableIntStateOf(5) }
+    var isStarting by rememberSaveable { mutableStateOf(true) }
+    var isFinished by rememberSaveable { mutableStateOf(false) }
 
     val context = LocalContext.current
     DisposableEffect(Unit) {
@@ -633,8 +645,8 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
         }
     }
 
-    val totalMenuSeconds = remember(steps) { steps.sumOf { it.durationSeconds } }
-    val secondsPassed = remember(currentStepIndex, remainingTime, isStarting) {
+    val totalMenuSeconds = rememberSaveable(steps) { steps.sumOf { it.durationSeconds } }
+    val secondsPassed = rememberSaveable(currentStepIndex, remainingTime, isStarting) {
         if (isStarting) 0 else {
             steps.take(currentStepIndex).sumOf { it.durationSeconds } +
                     ((steps.getOrNull(currentStepIndex)?.durationSeconds ?: 0) - remainingTime)
@@ -645,50 +657,83 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
     val navigateToNextStep = {
         if (currentStepIndex < steps.size - 1) {
             currentStepIndex++
-            remainingTime = steps[currentStepIndex].durationSeconds
+            remainingTime = steps[currentStepIndex].durationSeconds // 必ずここで代入する
         } else {
             isFinished = true
+            remainingTime = 0 // 安全のため0にする
         }
     }
 
-    LaunchedEffect(isStarting, isRunning) {
-        if (isStarting && isRunning) {
-            while (startDelay > 0) {
-                kotlinx.coroutines.delay(1000L)
-                if (isRunning) startDelay-- else break
-            }
-            if (startDelay <= 0) isStarting = false
-        }
-    }
+// 1. 状態管理変数
+    var hasFinishedTriggered by rememberSaveable { mutableStateOf(false) }
+    var isFirstComposition by rememberSaveable { mutableStateOf(true) } // 回転時の誤爆防止
+    var lastProcessedIndex by rememberSaveable { mutableIntStateOf(-1) }
 
-    LaunchedEffect(isStarting, currentStepIndex, remainingTime, isRunning) {
-        if (!isStarting && isRunning) {
-            if (remainingTime > 0) {
-                kotlinx.coroutines.delay(1000L)
-                remainingTime--
-            } else {
-                navigateToNextStep()
-            }
-        }
-    }
-
-    LaunchedEffect(currentStepIndex, isStarting) {
-        if (isStarting && startDelay == 5) return@LaunchedEffect
-        if (!isFinished) {
-            val toneG = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
-            try {
-                toneG.startTone(ToneGenerator.TONE_SUP_PIP, 100)
-                kotlinx.coroutines.delay(150L)
-                toneG.startTone(ToneGenerator.TONE_SUP_PIP, 250)
-            } finally {
-                toneG.release()
-            }
-        }
-    }
-
+// 2. 終了画面処理
     if (isFinished) {
+        LaunchedEffect(Unit) {
+            if (!hasFinishedTriggered) {
+                triggerStepVibration(context, isEnd = true)
+                playTone()
+                hasFinishedTriggered = true
+            }
+        }
         FinishedScreen(onDone = onFinish)
         return
+    }
+
+// 3. カウントダウン通知（1-5秒）
+    LaunchedEffect(remainingTime) {
+        if (!isRunning || isStarting || isFinished) return@LaunchedEffect
+        if (remainingTime in 1..5) {
+            triggerStepVibration(context, isEnd = false)
+        }
+    }
+
+    // 4. ステップ切り替え時の通知
+    LaunchedEffect(currentStepIndex) {
+        // 初回ロード時はスキップして初期化だけ行う
+        if (isFirstComposition) {
+            isFirstComposition = false
+            lastProcessedIndex = currentStepIndex
+            return@LaunchedEffect
+        }
+        // 停止中・準備中は鳴らさない
+        if (!isRunning || isStarting) return@LaunchedEffect
+
+        if (currentStepIndex != lastProcessedIndex) {
+            triggerStepVibration(context, isEnd = true)
+            playTone()
+            lastProcessedIndex = currentStepIndex
+        }
+    }
+
+// 5. タイマーのメインループ（時間減算のみに集中）
+    LaunchedEffect(Unit) {
+        while (isActive) {
+            delay(1000L)
+            if (!isRunning) continue
+
+            if (isStarting) {
+                if (startDelay > 0) {
+                    startDelay--
+                } else {
+                    isStarting = false
+                    // 【重要】ここで -1 ではなく 0 をセットする！
+                    // これにより、最初のステップ開始時の「0 != -1」という不一致が起きず、
+                    // 余計な振動が鳴りません。
+                    lastProcessedIndex = 0
+                    remainingTime = steps[0].durationSeconds
+                }
+            } else if (!isFinished) {
+                if (remainingTime > 1) {
+                    remainingTime--
+                } else {
+                    remainingTime = 0
+                    navigateToNextStep()
+                }
+            }
+        }
     }
 
     Box(
@@ -851,6 +896,7 @@ fun TotalProgressHeader(remaining: Int, total: Int) {
     }
 }
 
+@SuppressLint("DefaultLocale")
 @Composable
 fun MainStepContent(step: TimerStep?, remainingTime: Int, isRunning: Boolean) {
     if (step == null) return
@@ -864,9 +910,9 @@ fun MainStepContent(step: TimerStep?, remainingTime: Int, isRunning: Boolean) {
                 while (true) {
                     isPulse = true
                     toneG.startTone(ToneGenerator.TONE_PROP_BEEP, 15)
-                    kotlinx.coroutines.delay(60L)
+                    delay(60L)
                     isPulse = false
-                    kotlinx.coroutines.delay(maxOf(tempoInterval - 60L, 1L))
+                    delay(maxOf(tempoInterval - 60L, 1L))
                 }
             } finally {
                 toneG.release()
@@ -898,9 +944,9 @@ fun MainStepContent(step: TimerStep?, remainingTime: Int, isRunning: Boolean) {
             Spacer(modifier = Modifier.height(8.dp))
             val minutes = step.durationSeconds / 60
             val seconds = step.durationSeconds % 60
-            val remainingTime_minutes = remainingTime / 60
-            val remainingTime_seconds = remainingTime % 60
-            Text(text = String.format("%02d:%02d / %02d:%02d", remainingTime_minutes, remainingTime_seconds, minutes, seconds), fontSize = 42.sp, fontWeight = FontWeight.ExtraBold, color = contentColor)
+            val remainingTimeMinutes = remainingTime / 60
+            val remainingTimeSeconds = remainingTime % 60
+            Text(text = String.format("%02d:%02d / %02d:%02d", remainingTimeMinutes, remainingTimeSeconds, minutes, seconds), fontSize = 42.sp, fontWeight = FontWeight.ExtraBold, color = contentColor)
         }
     }
 }
@@ -1053,6 +1099,53 @@ fun MenuListScreen(menus: SnapshotStateList<TrainingMenu>, onSelectMenu: (Int) -
             colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)
         ) {
             Text(text = stringResource(id = R.string.btn_back), color = Color.White)
+        }
+    }
+}
+
+fun triggerStepVibration(context: Context, isEnd: Boolean) {
+    val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+        vibratorManager.defaultVibrator
+    } else {
+        @Suppress("DEPRECATION")
+        context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+    }
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (isEnd) {
+            // 終了時：リズムをつけて2回鳴らす（インパクト大）
+            // [無音, 振動, 無音, 振動]
+            val timings = longArrayOf(0, 300, 100, 300, 100, 300)
+            val amplitudes = intArrayOf(0, 255, 0, 255, 0, 255)
+            vibrator.vibrate(VibrationEffect.createWaveform(timings, amplitudes, -1))
+        } else {
+            // カウントダウン時：短く1回
+            vibrator.vibrate(VibrationEffect.createOneShot(100L, 255))
+        }
+    } else {
+        // API 26未満（古い端末）
+        @Suppress("DEPRECATION")
+        if (isEnd) {
+            vibrator.vibrate(longArrayOf(0, 300, 100, 300, 100, 300), -1)
+        } else {
+            vibrator.vibrate(100L)
+        }
+    }
+}
+
+// 別途、音だけを鳴らす関数を作っておくと管理が楽です
+suspend fun playTone() {
+    withContext(Dispatchers.IO) {
+        val toneG = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
+        try {
+            toneG.startTone(ToneGenerator.TONE_SUP_PIP, 80)
+            delay(120L)
+            toneG.startTone(ToneGenerator.TONE_SUP_PIP, 80)
+            delay(120L)
+            toneG.startTone(ToneGenerator.TONE_SUP_PIP, 80)
+        } finally {
+            toneG.release()
         }
     }
 }
