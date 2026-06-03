@@ -934,7 +934,7 @@ fun MainStepContent(step: TimerStep?, remainingTime: Int, isRunning: Boolean) {
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(vertical = 16.dp, horizontal = 24.dp),
+            modifier = Modifier.fillMaxSize().padding(vertical = 16.dp, horizontal = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -946,7 +946,20 @@ fun MainStepContent(step: TimerStep?, remainingTime: Int, isRunning: Boolean) {
             val seconds = step.durationSeconds % 60
             val remainingTimeMinutes = remainingTime / 60
             val remainingTimeSeconds = remainingTime % 60
-            Text(text = String.format("%02d:%02d / %02d:%02d", remainingTimeMinutes, remainingTimeSeconds, minutes, seconds), fontSize = 42.sp, fontWeight = FontWeight.ExtraBold, color = contentColor)
+            var dynamicFontSize by remember { mutableStateOf(42.sp) }
+            Text(text = String.format("%02d:%02d / %02d:%02d", remainingTimeMinutes, remainingTimeSeconds, minutes, seconds),
+                fontSize = dynamicFontSize,
+                fontWeight = FontWeight.ExtraBold,
+                color = contentColor,
+                maxLines = 1,
+                softWrap = false,
+                onTextLayout = { result ->
+                    // もし横幅が足りていない（didOverflowWidth）なら、サイズを少し下げる
+                    if (result.didOverflowWidth && dynamicFontSize > 24.sp) {
+                        dynamicFontSize *= 0.9f
+                    }
+                }
+            )
         }
     }
 }
