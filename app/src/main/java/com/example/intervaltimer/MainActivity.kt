@@ -63,6 +63,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
+import kotlin.time.Duration.Companion.milliseconds
 
 data class TimerStep(
     val name: String,
@@ -712,7 +713,7 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
 // 5. タイマーのメインループ（時間減算のみに集中）
     LaunchedEffect(Unit) {
         while (isActive) {
-            delay(1000L)
+            delay(1000L.milliseconds)
             if (!isRunning) continue
 
             if (isStarting) {
@@ -911,16 +912,16 @@ fun MainStepContent(step: TimerStep?, remainingTime: Int, isRunning: Boolean) {
             try {
                 while (isActive) {
                     if (!isRunning || currentRemainingTime <= 3) {
-                        delay(100L)
+                        delay(100L.milliseconds)
                         continue
                     }
                     isPulse = true
                     toneG.startTone(ToneGenerator.TONE_PROP_BEEP, 15)
 
-                    delay(60L)
+                    delay(60L.milliseconds)
                     isPulse = false
 
-                    delay(maxOf(tempoInterval - 60L, 1L))
+                    delay(maxOf(tempoInterval - 60L, 1L).milliseconds)
                 }
             } finally {
                 toneG.release()
@@ -1165,7 +1166,7 @@ suspend fun playTone(type: String) {
             } else if (type == "switch") {
                 repeat(3) {
                     toneG.startTone(ToneGenerator.TONE_DTMF_0, 80)
-                    delay(120)
+                    delay(120.milliseconds)
                 }
             }
         } finally {
