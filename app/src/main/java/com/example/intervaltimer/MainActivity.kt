@@ -59,10 +59,8 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import androidx.compose.runtime.saveable.rememberSaveable
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.milliseconds
 
 data class TimerStep(
@@ -683,7 +681,7 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
         return
     }
 
-// 3. カウントダウン通知（1-5秒）
+// 3. カウントダウン通知（1-3秒）
     LaunchedEffect(remainingTime) {
         if (!isRunning || isStarting || isFinished) return@LaunchedEffect
         if (remainingTime in 1..3) {
@@ -712,12 +710,14 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
 
 // 5. タイマーのメインループ（時間減算のみに集中）
     LaunchedEffect(Unit) {
+        val toneG = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
         while (isActive) {
             delay(1000L.milliseconds)
             if (!isRunning) continue
 
             if (isStarting) {
-                if (startDelay > 0) {
+                if (startDelay > 1) {
+                    toneG.startTone(ToneGenerator.TONE_DTMF_0, 100)
                     startDelay--
                 } else {
                     isStarting = false
@@ -910,18 +910,23 @@ fun MainStepContent(step: TimerStep?, remainingTime: Int, isRunning: Boolean) {
         LaunchedEffect(step.tempo, isRunning) {
             val toneG = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
             try {
+                var nextTick = System.currentTimeMillis()
                 while (isActive) {
                     if (!isRunning || currentRemainingTime <= 3) {
                         delay(100L.milliseconds)
+                        nextTick = System.currentTimeMillis()
                         continue
                     }
+                    nextTick += tempoInterval
                     isPulse = true
-                    toneG.startTone(ToneGenerator.TONE_PROP_BEEP, 15)
+                    toneG.startTone(ToneGenerator.TONE_PROP_BEEP, 40)
 
                     delay(60L.milliseconds)
                     isPulse = false
-
-                    delay(maxOf(tempoInterval - 60L, 1L).milliseconds)
+                    val wait = nextTick - System.currentTimeMillis()
+                    if (wait > 0) {
+                        delay(wait.milliseconds)
+                    }
                 }
             } finally {
                 toneG.release()
@@ -1158,11 +1163,11 @@ fun triggerStepVibration(context: Context, isEnd: Boolean) {
 
 // 別途、音だけを鳴らす関数を作っておくと管理が楽です
 suspend fun playTone(type: String) {
-    withContext(Dispatchers.IO) {
-        val toneG = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
+    val toneG = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
         try {
             if (type == "countdown") {
-                toneG.startTone(ToneGenerator.TONE_DTMF_0, 80)
+                toneG.startTone(ToneGenerator.TONE_DTMF_0, 100)
+                delay(120.milliseconds)
             } else if (type == "switch") {
                 repeat(3) {
                     toneG.startTone(ToneGenerator.TONE_DTMF_0, 80)
@@ -1171,6 +1176,5 @@ suspend fun playTone(type: String) {
             }
         } finally {
             toneG.release()
-        }
     }
 }
