@@ -907,7 +907,7 @@ fun MainStepContent(step: TimerStep?, remainingTime: Int, isRunning: Boolean) {
 
     val currentRemainingTime by rememberUpdatedState(remainingTime)
     if (isRunning && tempoInterval > 0L) {
-        LaunchedEffect(step.tempo, isRunning) {
+        LaunchedEffect(step.tempo, true) {
             val toneG = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
             try {
                 var nextTick = System.currentTimeMillis()
@@ -982,7 +982,7 @@ fun MainStepContent(step: TimerStep?, remainingTime: Int, isRunning: Boolean) {
 fun MenuManageScreen(menu: TrainingMenu, onNavigateToRunning: () -> Unit, onNavigateToEdit: () -> Unit, onDeleteMenu: () -> Unit, onBack: () -> Unit) {
     val context = LocalContext.current
     val gson = remember { Gson() }
-
+    val toastMessage = stringResource(id = R.string.msg_copied, menu.name)
     Column(modifier = Modifier.fillMaxSize().background(DarkBackgroundColor).padding(16.dp)) {
         Text(menu.name, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
         Spacer(modifier = Modifier.height(16.dp))
@@ -1051,7 +1051,7 @@ fun MenuManageScreen(menu: TrainingMenu, onNavigateToRunning: () -> Unit, onNavi
                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 val clip = ClipData.newPlainText("IntervalTimerSingleMenu", jsonText)
                 clipboard.setPrimaryClip(clip)
-                Toast.makeText(context, context.getString(R.string.msg_copied, menu.name), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, toastMessage, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth().height(56.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))
@@ -1075,6 +1075,7 @@ fun MenuListScreen(menus: SnapshotStateList<TrainingMenu>, onSelectMenu: (Int) -
 
         val invalidDataMessage = stringResource(R.string.err_invalid_data)
         val errorFormatMessage = stringResource(R.string.err_format_error)
+        val successMessageBase = stringResource(id = R.string.msg_imported, "")
         val errClipboardEmptyMessage = stringResource(R.string.err_clipboard_empty)
 
         Button(
@@ -1087,7 +1088,8 @@ fun MenuListScreen(menus: SnapshotStateList<TrainingMenu>, onSelectMenu: (Int) -
                         val importedMenu = gson.fromJson(jsonText, TrainingMenu::class.java)
                         if (importedMenu != null && importedMenu.name.isNotBlank()) {
                             menus.add(importedMenu)
-                            Toast.makeText(context, context.getString(R.string.msg_imported, importedMenu.name), Toast.LENGTH_SHORT).show()
+                            val finalMessage = successMessageBase.format(importedMenu.name)
+                            Toast.makeText(context, finalMessage, Toast.LENGTH_SHORT).show()
                         } else {
                             Toast.makeText(context, invalidDataMessage, Toast.LENGTH_SHORT).show()
                         }
