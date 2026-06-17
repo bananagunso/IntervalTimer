@@ -628,19 +628,35 @@ fun PresetEditScreen(presetNames: SnapshotStateList<String>) {
 
 @Composable
 fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
+
+
     var currentStepIndex by rememberSaveable { mutableIntStateOf(0) }
     var remainingTime by rememberSaveable { mutableIntStateOf(steps.getOrNull(0)?.durationSeconds ?: 0) }
     var isRunning by rememberSaveable { mutableStateOf(true) }
     var startDelay by rememberSaveable { mutableIntStateOf(5) }
     var isStarting by rememberSaveable { mutableStateOf(true) }
     var isFinished by rememberSaveable { mutableStateOf(false) }
+    val toneG = remember { ToneGenerator(AudioManager.STREAM_MUSIC, 100) }
+    suspend fun playTone(type: String) {
+        if (type == "countdown") {
+            toneG.startTone(ToneGenerator.TONE_DTMF_0, 100)
+            delay(120.milliseconds)
+        } else if (type == "switch") {
+            repeat(3) {
+                toneG.startTone(ToneGenerator.TONE_DTMF_0, 80)
+                delay(120.milliseconds)
+            }
+        }
+    }
 
     val context = LocalContext.current
+
     DisposableEffect(Unit) {
         val activity = context as? Activity
         activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         onDispose {
             activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            toneG.release()
         }
     }
 
@@ -1163,20 +1179,3 @@ fun triggerStepVibration(context: Context, isEnd: Boolean) {
     }
 }
 
-// 別途、音だけを鳴らす関数を作っておくと管理が楽です
-suspend fun playTone(type: String) {
-    val toneG = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
-        try {
-            if (type == "countdown") {
-                toneG.startTone(ToneGenerator.TONE_DTMF_0, 100)
-                delay(120.milliseconds)
-            } else if (type == "switch") {
-                repeat(3) {
-                    toneG.startTone(ToneGenerator.TONE_DTMF_0, 80)
-                    delay(120.milliseconds)
-                }
-            }
-        } finally {
-            toneG.release()
-    }
-}
