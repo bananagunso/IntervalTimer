@@ -638,8 +638,6 @@ fun PresetEditScreen(presetNames: SnapshotStateList<String>) {
 
 @Composable
 fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
-
-
     var currentStepIndex by rememberSaveable { mutableIntStateOf(0) }
     var remainingTime by rememberSaveable { mutableIntStateOf(steps.getOrNull(0)?.durationSeconds ?: 0) }
     var isRunning by rememberSaveable { mutableStateOf(true) }
@@ -1009,85 +1007,141 @@ fun MenuManageScreen(menu: TrainingMenu, onNavigateToRunning: () -> Unit, onNavi
     val context = LocalContext.current
     val gson = remember { Gson() }
     val toastMessage = stringResource(id = R.string.msg_copied, menu.name)
-    Column(modifier = Modifier.fillMaxSize().background(DarkBackgroundColor).padding(16.dp)) {
-        Text(menu.name, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // ステップ一覧（ここは変更なし）
-        if (menu.steps.isEmpty()) {
-            Text(text = stringResource(id = R.string.msg_no_steps), color = Color.Gray)
+    BoxWithConstraints(modifier = Modifier.fillMaxSize().background(DarkBackgroundColor).padding(16.dp)) {
+        if (maxWidth > maxHeight) {
+            // --- 横画面レイアウト (Row) ---
+            Row(modifier = Modifier.fillMaxSize()) {
+                // 左側：ステップ一覧（重み付けで半分より広く）
+                Box(modifier = Modifier.weight(1.5f).padding(end = 16.dp)) {
+                    StepList(menu)
+                }
+                // 右側：操作ボタン群（固定幅）
+                Column(modifier = Modifier.weight(1f)) {
+                    MenuActionButtons(
+                        menu = menu,
+                        onNavigateToRunning = onNavigateToRunning,
+                        onNavigateToEdit = onNavigateToEdit,
+                        onDeleteMenu = onDeleteMenu,
+                        onBack = onBack,
+                        context = context,          // 渡す
+                        gson = gson,                // 渡す
+                        toastMessage = toastMessage // 渡す
+                    )
+                }
+            }
         } else {
-            LazyColumn(modifier = Modifier.weight(1f)) {
-                items(menu.steps) { step ->
-                    Card(
-                        modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))
-                    ) {
-                        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Box(modifier = Modifier.size(12.dp).background(step.color, shape = CircleShape))
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(step.name, modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold, color = Color.White)
-                            val minutes = step.durationSeconds / 60
-                            val seconds = step.durationSeconds % 60
-                            Text(text = stringResource(id = R.string.label_step_info, minutes, seconds, step.tempo), fontSize = 14.sp, color = Color.LightGray)
-                        }
+            // --- 縦画面レイアウト (Column) ---
+            Column(modifier = Modifier.fillMaxSize()) {
+                Text(
+                    text = menu.name,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = DarkTextColor
+                )
+                Box(modifier = Modifier.weight(1f)) { StepList(menu) }
+                MenuActionButtons(
+                    menu = menu,
+                    onNavigateToRunning = onNavigateToRunning,
+                    onNavigateToEdit = onNavigateToEdit,
+                    onDeleteMenu = onDeleteMenu,
+                    onBack = onBack,
+                    context = context,          // 渡す
+                    gson = gson,                // 渡す
+                    toastMessage = toastMessage // 渡す
+                )
+            }
+        }
+    }
+}
+
+// 共通パーツ化してコードをスッキリさせる
+@Composable
+fun StepList(menu: TrainingMenu) {
+    if (menu.steps.isEmpty()) {
+        Text(text = stringResource(id = R.string.msg_no_steps), color = Color.Gray)
+    } else {
+        LazyColumn {
+            items(menu.steps) { step ->
+                Card(
+                    modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))
+                ) {
+                    Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Box(modifier = Modifier.size(12.dp).background(step.color, shape = CircleShape))
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(step.name, modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold, color = Color.White)
+                        val minutes = step.durationSeconds / 60
+                        val seconds = step.durationSeconds % 60
+                        Text(text = stringResource(id = R.string.label_step_info, minutes, seconds, step.tempo), fontSize = 14.sp, color = Color.LightGray)
                     }
                 }
             }
         }
+    }
+}
 
-        Spacer(modifier = Modifier.height(24.dp))
+@Composable
+fun MenuActionButtons(
+    menu: TrainingMenu,
+    onNavigateToRunning: () -> Unit,
+    onNavigateToEdit: () -> Unit,
+    onDeleteMenu: () -> Unit,
+    onBack: () -> Unit,
+    context: Context,        // 追加
+    gson: Gson,              // 追加
+    toastMessage: String     // 追加
+) {
+    // ここに開始、編集、削除、シェアボタンをまとめる
+    // 縦画面ではそのまま並べ、横画面の時もこのColumnを呼び出すだけで済む
+    // 1. 【開始ボタン】 最優先なので一番上に配置。高さを倍（112dp）にして押しやすく
+    Button(
+        onClick = onNavigateToRunning,
+        modifier = Modifier.fillMaxWidth().height(112.dp),
+        enabled = menu.steps.isNotEmpty(),
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+    ) {
+        Text(text = stringResource(id = R.string.btn_start_training_long), fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
+    }
 
-        // 1. 【開始ボタン】 最優先なので一番上に配置。高さを倍（112dp）にして押しやすく
+    Spacer(modifier = Modifier.height(12.dp))
+
+    // 2. 【編集・削除ボタン】 管理用なので横並びで配置
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Button(
-            onClick = onNavigateToRunning,
-            modifier = Modifier.fillMaxWidth().height(112.dp),
-            enabled = menu.steps.isNotEmpty(),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            onClick = onNavigateToEdit,
+            modifier = Modifier.weight(1f).height(56.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)
         ) {
-            Text(text = stringResource(id = R.string.btn_start_training_long), fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
+            Text(text = stringResource(id = R.string.btn_edit), color = Color.White)
         }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // 2. 【編集・削除ボタン】 管理用なので横並びで配置
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(
-                onClick = onNavigateToEdit,
-                modifier = Modifier.weight(1f).height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)
-            ) {
-                Text(text = stringResource(id = R.string.btn_edit), color = Color.White)
-            }
-            Button(
-                onClick = onDeleteMenu,
-                modifier = Modifier.weight(1f).height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC62828))
-            ) {
-                Text(text = stringResource(id = R.string.btn_delete), color = Color.White)
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // 3. 【シェアボタン】 優先度を下げて下に配置（サイズは標準）
         Button(
-            onClick = {
-                val jsonText = gson.toJson(menu)
-                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                val clip = ClipData.newPlainText("IntervalTimerSingleMenu", jsonText)
-                clipboard.setPrimaryClip(clip)
-                Toast.makeText(context, toastMessage, Toast.LENGTH_SHORT).show()
-            },
-            modifier = Modifier.fillMaxWidth().height(56.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))
+            onClick = onDeleteMenu,
+            modifier = Modifier.weight(1f).height(56.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC62828))
         ) {
-            Text(text = stringResource(id = R.string.btn_share_menu), color = Color.White)
+            Text(text = stringResource(id = R.string.btn_delete), color = Color.White)
         }
+    }
 
-        TextButton(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
-            Text(text = stringResource(id = R.string.btn_back), color = Color.Gray)
-        }
+    Spacer(modifier = Modifier.height(12.dp))
+
+    // 3. 【シェアボタン】 優先度を下げて下に配置（サイズは標準）
+    Button(
+        onClick = {
+            val jsonText = gson.toJson(menu)
+            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText("IntervalTimerSingleMenu", jsonText)
+            clipboard.setPrimaryClip(clip)
+            Toast.makeText(context, toastMessage, Toast.LENGTH_SHORT).show()
+        },
+        modifier = Modifier.fillMaxWidth().height(56.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))
+    ) {
+        Text(text = stringResource(id = R.string.btn_share_menu), color = Color.White)
+    }
+
+    TextButton(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
+        Text(text = stringResource(id = R.string.btn_back), color = Color.Gray)
     }
 }
 @Composable
