@@ -62,8 +62,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlin.time.Duration.Companion.milliseconds
-import androidx.compose.foundation.rememberScrollState // 追加
-import androidx.compose.foundation.verticalScroll
 
 data class TimerStep(
     val name: String,
@@ -208,15 +206,12 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun TopScreen(onNavigateToAdd: () -> Unit, onNavigateToRunning: () -> Unit, onNavigateToEdit: () -> Unit) {
-    // 1. スクロール状態を定義
-    val scrollState = rememberScrollState()
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(DarkBackgroundColor)
-            .padding(32.dp)
-            .verticalScroll(scrollState), // 2. スクロールを有効化
-        verticalArrangement = Arrangement.spacedBy(1.dp),
+            .padding(32.dp),
+        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(text = stringResource(id = R.string.title_interval_timer), fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
@@ -286,17 +281,8 @@ fun TimerScreen(
     )
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
     val selectedColor = colorOptions[selectedIndex]
-    val scrollState = rememberScrollState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(DarkBackgroundColor)
-            .padding(16.dp)
-            .verticalScroll(scrollState),
-        verticalArrangement = Arrangement.Center, // 縦幅がある時は中央
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
+    Column(modifier = Modifier.fillMaxSize().background(DarkBackgroundColor).padding(16.dp)) {
         Text(text = stringResource(id = if (editMenuIndex == -1) R.string.title_create_menu else R.string.title_edit_menu), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -437,43 +423,47 @@ fun TimerScreen(
             Text(text = stringResource(id = R.string.btn_add_step))
         }
 
-        tempSteps.forEachIndexed { index, step ->
-            Card(
-                modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))
-            ) {
-                Row(modifier = Modifier.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Box(modifier = Modifier.size(12.dp).background(step.color, shape = CircleShape))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        val minutes = step.durationSeconds / 60
-                        val seconds = step.durationSeconds % 60
-                        Text(step.name, fontWeight = FontWeight.Bold, color = Color.White)
-                        Text(text = String.format("%02d:%02d", minutes, seconds)+" / ${step.tempo}RPM", fontSize = 14.sp, color = Color.LightGray)
-                    }
-                    if (index > 0) {
-                        IconButton(onClick = {
-                        val item = tempSteps.removeAt(index)
-                            tempSteps.add(index - 1, item)
-                        }) {
-                            Text("▲", color = Color.LightGray, fontSize = 14.sp)
+        LazyColumn(modifier = Modifier.weight(1f).padding(vertical = 8.dp)) {
+            itemsIndexed(tempSteps) { index, step ->
+                Card(
+                    modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))
+                ) {
+                    Row(modifier = Modifier.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Box(modifier = Modifier.size(12.dp).background(step.color, shape = CircleShape))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            val minutes = step.durationSeconds / 60
+                            val seconds = step.durationSeconds % 60
+                            Text(step.name, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text(text = String.format("%02d:%02d", minutes, seconds)+" / ${step.tempo}RPM", fontSize = 14.sp, color = Color.LightGray)
                         }
-                    } else {
-                        Spacer(modifier = Modifier.size(48.dp))
-                    }
 
-                    if (index < tempSteps.lastIndex) {
-                        IconButton(onClick = {
-                            val item = tempSteps.removeAt(index)
-                            tempSteps.add(index + 1, item)
-                        }) {
-                            Text("▼", color = Color.LightGray, fontSize = 14.sp)
+                        if (index > 0) {
+                            IconButton(onClick = {
+                                val item = tempSteps.removeAt(index)
+                                tempSteps.add(index - 1, item)
+                            }) {
+                                Text("▲", color = Color.LightGray, fontSize = 14.sp)
+                            }
+                        } else {
+                            Spacer(modifier = Modifier.size(48.dp))
                         }
-                    } else {
-                        Spacer(modifier = Modifier.size(48.dp))
-                    }
-                    IconButton(onClick = { tempSteps.remove(step) }) {
-                        Icon(Icons.Default.Delete, contentDescription = null, tint = Color.LightGray)
+
+                        if (index < tempSteps.lastIndex) {
+                            IconButton(onClick = {
+                                val item = tempSteps.removeAt(index)
+                                tempSteps.add(index + 1, item)
+                            }) {
+                                Text("▼", color = Color.LightGray, fontSize = 14.sp)
+                            }
+                        } else {
+                            Spacer(modifier = Modifier.size(48.dp))
+                        }
+
+                        IconButton(onClick = { tempSteps.remove(step) }) {
+                            Icon(Icons.Default.Delete, contentDescription = null, tint = Color.LightGray)
+                        }
                     }
                 }
             }
