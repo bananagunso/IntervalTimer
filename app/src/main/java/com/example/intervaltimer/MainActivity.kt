@@ -768,12 +768,18 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
         ) {
             // 1. 上部：全体の進捗ヘッダー（💡開始前も隠し要素として配置して高さを完全に一致させる）
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                if (!isStarting) {
-                    TotalProgressHeader(totalRemainingSeconds, totalMenuSeconds)
-                } else {
-                    // 開始前（準備中）のときは透明にして高さを確保
-                    Box(modifier = Modifier.alpha(0f)) {
-                        TotalProgressHeader(totalMenuSeconds, totalMenuSeconds)
+                Column(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    if (!isStarting) {
+                        ProgressBar(totalRemainingSeconds, totalMenuSeconds)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        RemainingTime(totalRemainingSeconds, totalMenuSeconds)
+                    } else {
+                        // 開始前（準備中）のときは透明にして高さを確保
+                        Box(modifier = Modifier.alpha(0f)) {
+                            ProgressBar(totalRemainingSeconds, totalMenuSeconds)
+                            Spacer(modifier = Modifier.height(12.dp))
+                            RemainingTime(totalRemainingSeconds, totalMenuSeconds)
+                        }
                     }
                 }
             }
@@ -853,66 +859,34 @@ fun FinishedScreen(onDone: () -> Unit) {
     }
 }
 
-@Composable
-fun PauseButton(isRunning: Boolean, onClick: () -> Unit) {
-    val containerColor = if (isRunning) DarkSurfaceColor else Color(0xFFE57373)
-    val icon = if (isRunning) Icons.Default.Pause else Icons.Default.PlayArrow
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Button(onClick = onClick, modifier = Modifier.size(80.dp), shape = CircleShape, colors = ButtonDefaults.buttonColors(containerColor = containerColor), contentPadding = PaddingValues(0.dp)) {
-            Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(40.dp), tint = Color.White)
-        }
-    }
-}
+
+
 
 @Composable
-fun NextStepsPreview(steps: List<TimerStep>, currentIndex: Int, isVisible: Boolean) {
-    Column(modifier = Modifier.fillMaxWidth().height(160.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        if (isVisible) {
-            val next1 = steps.getOrNull(currentIndex + 1)
-            if (next1 != null) NextStepRow(step = next1, label = stringResource(id = R.string.label_next)) else Spacer(modifier = Modifier.height(68.dp))
-            val next2 = steps.getOrNull(currentIndex + 2)
-            if (next2 != null) NextStepRow(step = next2, label = stringResource(id = R.string.label_after_that) ) else Spacer(modifier = Modifier.height(68.dp))
+fun ProgressBar(remaining: Int, total: Int) {
+    val progress =
+        if (total > 0) {
+            (total - remaining).toFloat() / total.toFloat()
         } else {
-            Spacer(modifier = Modifier.fillMaxSize())
+            0f
         }
-    }
+    LinearProgressIndicator(
+        progress = { progress },
+        modifier = Modifier.fillMaxWidth().height(10.dp).clip(CircleShape),
+        color = Color.Cyan,
+        trackColor = DarkSurfaceColor
+    )
 }
 
 @Composable
-fun NextStepRow(step: TimerStep, label: String) {
-    Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))) {
-        Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("$label: ${step.name}", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White.copy(alpha = 0.9f), modifier = Modifier.weight(1f))
-            val minutes = step.durationSeconds / 60
-            val seconds = step.durationSeconds % 60
-            Text(text = stringResource(id = R.string.label_tempo_and_seconds, step.tempo, minutes, seconds), fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color.White.copy(alpha = 0.8f))
-        }
+fun RemainingTime(remaining: Int, total: Int) {
+    Text(text = stringResource(id = R.string.label_total_remaining), fontSize = 12.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+    Row(verticalAlignment = Alignment.Bottom) {
+        Text(String.format(Locale.US, "%02d:%02d", remaining / 60, remaining % 60), fontSize = 32.sp, fontWeight = FontWeight.Black, color = Color.White)
+        Text(String.format(Locale.US, " / %02d:%02d", total / 60, total % 60), fontSize = 18.sp, fontWeight = FontWeight.Medium, color = Color.Gray, modifier = Modifier.padding(bottom = 4.dp, start = 4.dp))
     }
 }
 
-@Composable
-fun TotalProgressHeader(remaining: Int, total: Int) {
-    Column(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        val progress =
-            if (total > 0) {
-                (total - remaining).toFloat() / total.toFloat()
-            } else {
-                0f
-            }
-        LinearProgressIndicator(
-            progress = { progress },
-            modifier = Modifier.fillMaxWidth().height(10.dp).clip(CircleShape),
-            color = Color.Cyan,
-            trackColor = DarkSurfaceColor
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        Text(text = stringResource(id = R.string.label_total_remaining), fontSize = 12.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
-        Row(verticalAlignment = Alignment.Bottom) {
-            Text(String.format(Locale.US, "%02d:%02d", remaining / 60, remaining % 60), fontSize = 32.sp, fontWeight = FontWeight.Black, color = Color.White)
-            Text(String.format(Locale.US, " / %02d:%02d", total / 60, total % 60), fontSize = 18.sp, fontWeight = FontWeight.Medium, color = Color.Gray, modifier = Modifier.padding(bottom = 4.dp, start = 4.dp))
-        }
-    }
-}
 
 @SuppressLint("DefaultLocale")
 @Composable
@@ -993,6 +967,45 @@ fun MainStepContent(step: TimerStep?, remainingTime: Int, isRunning: Boolean) {
         }
     }
 }
+
+
+@Composable
+fun PauseButton(isRunning: Boolean, onClick: () -> Unit) {
+    val containerColor = if (isRunning) DarkSurfaceColor else Color(0xFFE57373)
+    val icon = if (isRunning) Icons.Default.Pause else Icons.Default.PlayArrow
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Button(onClick = onClick, modifier = Modifier.size(80.dp), shape = CircleShape, colors = ButtonDefaults.buttonColors(containerColor = containerColor), contentPadding = PaddingValues(0.dp)) {
+            Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(40.dp), tint = Color.White)
+        }
+    }
+}
+@Composable
+fun NextStepsPreview(steps: List<TimerStep>, currentIndex: Int, isVisible: Boolean) {
+    Column(modifier = Modifier.fillMaxWidth().height(160.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        if (isVisible) {
+            val next1 = steps.getOrNull(currentIndex + 1)
+            if (next1 != null) NextStepRow(step = next1, label = stringResource(id = R.string.label_next)) else Spacer(modifier = Modifier.height(68.dp))
+            val next2 = steps.getOrNull(currentIndex + 2)
+            if (next2 != null) NextStepRow(step = next2, label = stringResource(id = R.string.label_after_that) ) else Spacer(modifier = Modifier.height(68.dp))
+        } else {
+            Spacer(modifier = Modifier.fillMaxSize())
+        }
+    }
+}
+
+@Composable
+fun NextStepRow(step: TimerStep, label: String) {
+    Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))) {
+        Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text("$label: ${step.name}", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White.copy(alpha = 0.9f), modifier = Modifier.weight(1f))
+            val minutes = step.durationSeconds / 60
+            val seconds = step.durationSeconds % 60
+            Text(text = stringResource(id = R.string.label_tempo_and_seconds, step.tempo, minutes, seconds), fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color.White.copy(alpha = 0.8f))
+        }
+    }
+}
+
+
 
 @Composable
 fun MenuManageScreen(menu: TrainingMenu, onNavigateToRunning: () -> Unit, onNavigateToEdit: () -> Unit, onDeleteMenu: () -> Unit, onBack: () -> Unit) {
