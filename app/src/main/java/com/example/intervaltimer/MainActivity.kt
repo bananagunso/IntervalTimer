@@ -1223,7 +1223,7 @@ fun MainStepContent(step: TimerStep?, remainingTime: Int, isRunning: Boolean) {
     val contentColor = if (baseColor.luminance() > 0.5f) Color.Black else Color.White
 
     Card(
-        modifier = Modifier.fillMaxWidth().height(260.dp).padding(horizontal = 8.dp),
+        modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp),
         colors = CardDefaults.cardColors(containerColor = animatedColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
