@@ -209,39 +209,43 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun TopScreen(onNavigateToAdd: () -> Unit, onNavigateToRunning: () -> Unit, onNavigateToEdit: () -> Unit) {
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-    if (isLandscape) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(DarkBackgroundColor),
-                //.padding(24.dp)
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ){
-            Text(text = stringResource(id = R.string.title_interval_timer), fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
-            Spacer(modifier = Modifier.height(16.dp))
-            TopScreenButton(textRes = R.string.btn_create_menu, onNavigateToAdd)
-            Spacer(modifier = Modifier.height(16.dp))
-            TopScreenButton(textRes = R.string.btn_start_training, onNavigateToRunning)
-            Spacer(modifier = Modifier.height(16.dp))
-            TopScreenButton(textRes = R.string.btn_edit_presets, onNavigateToEdit)
-        }
-    } else {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(DarkBackgroundColor)
-                .padding(32.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(text = stringResource(id = R.string.title_interval_timer), fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
-            Spacer(modifier = Modifier.height(16.dp))
-            TopScreenButton(textRes = R.string.btn_create_menu, onNavigateToAdd)
-            Spacer(modifier = Modifier.height(16.dp))
-            TopScreenButton(textRes = R.string.btn_start_training, onNavigateToRunning)
-            Spacer(modifier = Modifier.height(16.dp))
-            TopScreenButton(textRes = R.string.btn_edit_presets, onNavigateToEdit)
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        if (isLandscape) {
+            Column(
+                modifier = Modifier
+                    .widthIn(max = 480.dp)
+                    .fillMaxWidth()
+                    .background(DarkBackgroundColor)
+                    .padding(12.dp)
+            ){
+                Text(text = stringResource(id = R.string.title_interval_timer), fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
+                Spacer(modifier = Modifier.height(12.dp))
+                TopScreenButton(textRes = R.string.btn_create_menu, onNavigateToAdd)
+                Spacer(modifier = Modifier.height(12.dp))
+                TopScreenButton(textRes = R.string.btn_start_training, onNavigateToRunning)
+                Spacer(modifier = Modifier.height(12.dp))
+                TopScreenButton(textRes = R.string.btn_edit_presets, onNavigateToEdit)
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .widthIn(max = 480.dp)
+                    .fillMaxWidth()
+                    .background(DarkBackgroundColor)
+                    .padding(12.dp)
+            ) {
+                Text(text = stringResource(id = R.string.title_interval_timer), fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
+                Spacer(modifier = Modifier.height(12.dp))
+                TopScreenButton(textRes = R.string.btn_create_menu, onNavigateToAdd)
+                Spacer(modifier = Modifier.height(12.dp))
+                TopScreenButton(textRes = R.string.btn_start_training, onNavigateToRunning)
+                Spacer(modifier = Modifier.height(12.dp))
+                TopScreenButton(textRes = R.string.btn_edit_presets, onNavigateToEdit)
+            }
         }
     }
 }
@@ -251,7 +255,7 @@ fun TopScreen(onNavigateToAdd: () -> Unit, onNavigateToRunning: () -> Unit, onNa
 fun TopScreenButton(textRes: Int, onClick: () -> Unit  ){
     Button(
         onClick = onClick,
-        modifier = Modifier.widthIn(min = 360.dp).height(64.dp),
+        modifier = Modifier.fillMaxWidth().height(64.dp),
         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = Color.White)
     ) {
         Text(text = stringResource(id = textRes), fontSize = 28.sp)
@@ -304,18 +308,17 @@ fun TimerScreen(
     if (isLandscape) {
         Row(modifier = Modifier
             .fillMaxSize()
-            .background(DarkBackgroundColor).
-            padding(horizontal = 24.dp)
+            .background(DarkBackgroundColor)
+            .padding(horizontal = 24.dp),
+            verticalAlignment = Alignment.Bottom
         ) {
             Column(modifier = Modifier
                 .fillMaxWidth(0.5f)
-                .fillMaxHeight()
                 .background(DarkBackgroundColor)
-                .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.Bottom
+                .padding(horizontal = 12.dp),
             ) {
                 Text(text = stringResource(id = if (editMenuIndex == -1) R.string.title_create_menu else R.string.title_edit_menu), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 //ステップ名
                 Box(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
@@ -352,7 +355,7 @@ fun TimerScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 //カラーラベル
                 Text(text = stringResource(id = R.string.label_color), fontSize = 14.sp, color = Color.Gray)
                 Row(
@@ -432,6 +435,7 @@ fun TimerScreen(
                         )
                     }
                 }
+                Spacer(modifier = Modifier.height(12.dp))
 //ステップ追加ボタン
                 Button(
                     onClick = {
@@ -449,23 +453,22 @@ fun TimerScreen(
                             )
                         }
                     },
-                    modifier = Modifier.padding(top = 8.dp).fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().height(56.dp)
                 ) {
                     Text(text = stringResource(id = R.string.btn_add_step))
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
             }
 
             Column(modifier = Modifier
                 .fillMaxWidth()
                 .background(DarkBackgroundColor)
-                .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.Center
+                .padding(horizontal = 12.dp),
             ) {
                 LazyColumn(modifier = Modifier
                     .weight(1f)
                     .background(DarkBackgroundColor)
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 12.dp),
                 ) {
                     itemsIndexed(tempSteps) { index, step ->
                         Card(
@@ -478,7 +481,7 @@ fun TimerScreen(
                                 CenterVertically
                             ) {
                                 Box(modifier = Modifier.size(12.dp).background(step.color, shape = CircleShape))
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(modifier = Modifier.width(12.dp))
                                 Column(modifier = Modifier.weight(1f)) {
                                     val minutes = step.durationSeconds / 60
                                     val seconds = step.durationSeconds % 60
@@ -523,7 +526,7 @@ fun TimerScreen(
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 //保存ボタン
                 Button(
                     onClick = {
@@ -535,17 +538,21 @@ fun TimerScreen(
                         }
                         onSaveFinished()
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().height(56.dp)
                 ) {
                     Text(text = stringResource(id = if (editMenuIndex == -1) R.string.btn_save_menu else R.string.btn_overwrite_menu))
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
     } else {
-        Column(modifier = Modifier.fillMaxSize().background(DarkBackgroundColor).padding(16.dp)) {
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .background(DarkBackgroundColor)
+            .padding(12.dp)
+        ) {
             Text(text = stringResource(id = if (editMenuIndex == -1) R.string.title_create_menu else R.string.title_edit_menu), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             //ステップ名
             Box(modifier = Modifier.fillMaxWidth()) {
@@ -583,7 +590,7 @@ fun TimerScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             //カラーラベル
             Text(text = stringResource(id = R.string.label_color), fontSize = 14.sp, color = Color.Gray)
@@ -682,7 +689,7 @@ fun TimerScreen(
                         )
                     }
                 },
-                modifier = Modifier.padding(top = 8.dp).fillMaxWidth()
+                modifier = Modifier.padding(top = 8.dp).fillMaxWidth().height(56.dp)
             ) {
                 Text(text = stringResource(id = R.string.btn_add_step))
             }
@@ -695,7 +702,7 @@ fun TimerScreen(
                     ) {
                         Row(modifier = Modifier.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
                             Box(modifier = Modifier.size(12.dp).background(step.color, shape = CircleShape))
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(12.dp))
                             Column(modifier = Modifier.weight(1f)) {
                                 val minutes = step.durationSeconds / 60
                                 val seconds = step.durationSeconds % 60
@@ -740,7 +747,7 @@ fun TimerScreen(
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 //保存ボタン
             Button(
                 onClick = {
@@ -752,7 +759,7 @@ fun TimerScreen(
                     }
                     onSaveFinished()
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().height(56.dp)
             ) {
                 Text(text = stringResource(id = if (editMenuIndex == -1) R.string.btn_save_menu else R.string.btn_overwrite_menu))
             }
@@ -784,7 +791,7 @@ fun TimeDrumPicker(
         }
 
         // 秒エリア（ドラム＋文字）
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 16.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 12.dp)) {
             DigitWheel(0..59, seconds) {
                 seconds = it
                 onTimeSelected(minutes, seconds)
@@ -856,9 +863,9 @@ fun DigitWheel(range: IntRange, value: Int, modifier: Modifier = Modifier, onVal
 @Composable
 fun PresetEditScreen(presetNames: SnapshotStateList<String>) {
     var newPreset by rememberSaveable { mutableStateOf("") }
-    Column(modifier = Modifier.fillMaxSize().background(DarkBackgroundColor).padding(16.dp)) {
+    Column(modifier = Modifier.fillMaxSize().background(DarkBackgroundColor).padding(12.dp)) {
         Text(text = stringResource(id = R.string.title_preset_edit), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             OutlinedTextField(
                 value = newPreset,
@@ -867,7 +874,7 @@ fun PresetEditScreen(presetNames: SnapshotStateList<String>) {
                 modifier = Modifier.weight(1f),
                 colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
             )
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(12.dp))
             Button(
                 onClick = { if(newPreset.isNotBlank()){ presetNames.add(newPreset); newPreset="" } },
                 modifier = Modifier.height(56.dp)
@@ -875,7 +882,7 @@ fun PresetEditScreen(presetNames: SnapshotStateList<String>) {
                 Text(text = stringResource(id = R.string.btn_add))
             }
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         LazyColumn(modifier = Modifier.weight(1f)) {
             items(presetNames) { name ->
                 Row(
@@ -1028,13 +1035,13 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 24.dp),
+                .padding(horizontal = 12.dp, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceEvenly
         ) {
             // 1. 上部：全体の進捗ヘッダー（💡開始前も隠し要素として配置して高さを完全に一致させる）
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Column(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     if (!isStarting) {
                         ProgressBar(totalRemainingSeconds, totalMenuSeconds)
                         Spacer(modifier = Modifier.height(12.dp))
@@ -1074,12 +1081,12 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                 // 💡早送りボタンと同じサイズ（64dp）のダミー幅を左側に置いて一時停止を完全中央に
                 Spacer(modifier = Modifier.size(64.dp))
 
-                Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(12.dp))
 
                 // [一時停止ボタン]（サイズは従来のまま80dp）
                 PauseButton(isRunning = isRunning, onClick = { isRunning = !isRunning })
 
-                Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(12.dp))
 
                 // [次のステップに進むボタン]（💡一回り大きく64dpに変更）
                 if (!isStarting) {
@@ -1113,9 +1120,12 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
 @Composable
 fun FinishedScreen(onDone: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize().background(DarkBackgroundColor), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment
+                .CenterHorizontally
+        ) {
             Text(text = stringResource(id = R.string.finished_message), fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.White)
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(100.dp), tint = Color(0xFF81C784))
             Spacer(modifier = Modifier.height(48.dp))
             Button(onClick = onDone, modifier = Modifier.fillMaxWidth(0.6f).height(56.dp), colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)) {
@@ -1204,14 +1214,14 @@ fun MainStepContent(step: TimerStep?, remainingTime: Int, isRunning: Boolean) {
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(vertical = 16.dp, horizontal = 8.dp),
+            modifier = Modifier.fillMaxSize().padding(vertical = 12.dp, horizontal = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             Text(step.name, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = contentColor)
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             Text("${step.tempo} RPM", fontSize = 42.sp, fontWeight = FontWeight.Black, color = contentColor)
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             val minutes = step.durationSeconds / 60
             val seconds = step.durationSeconds % 60
             val remainingTimeMinutes = remainingTime / 60
@@ -1262,7 +1272,7 @@ fun NextStepsPreview(steps: List<TimerStep>, currentIndex: Int, isVisible: Boole
 @Composable
 fun NextStepRow(step: TimerStep, label: String) {
     Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))) {
-        Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("$label: ${step.name}", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White.copy(alpha = 0.9f), modifier = Modifier.weight(1f))
             val minutes = step.durationSeconds / 60
             val seconds = step.durationSeconds % 60
@@ -1278,84 +1288,186 @@ fun MenuManageScreen(menu: TrainingMenu, onNavigateToRunning: () -> Unit, onNavi
     val context = LocalContext.current
     val gson = remember { Gson() }
     val toastMessage = stringResource(id = R.string.msg_copied, menu.name)
-    Column(modifier = Modifier.fillMaxSize().background(DarkBackgroundColor).padding(16.dp)) {
-        Text(menu.name, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
-        Spacer(modifier = Modifier.height(16.dp))
 
-        // ステップ一覧（ここは変更なし）
-        if (menu.steps.isEmpty()) {
-            Text(text = stringResource(id = R.string.msg_no_steps), color = Color.Gray)
-        } else {
-            LazyColumn(modifier = Modifier.weight(1f)) {
-                items(menu.steps) { step ->
-                    Card(
-                        modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))
-                    ) {
-                        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Box(modifier = Modifier.size(12.dp).background(step.color, shape = CircleShape))
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(step.name, modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold, color = Color.White)
-                            val minutes = step.durationSeconds / 60
-                            val seconds = step.durationSeconds % 60
-                            Text(text = stringResource(id = R.string.label_step_info, minutes, seconds, step.tempo), fontSize = 14.sp, color = Color.LightGray)
+    val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+    if (isLandscape) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(DarkBackgroundColor).padding(horizontal = 24.dp)
+            ,verticalAlignment = Alignment.Bottom
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth(0.5f)
+                    .background(DarkBackgroundColor)
+                    .padding(horizontal = 12.dp)
+            ) {
+                Text(menu.name, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
+                Spacer(modifier = Modifier.height(12.dp))
+                if (menu.steps.isEmpty()) {
+                    Text(text = stringResource(id = R.string.msg_no_steps), color = Color.Gray)
+                } else {
+                    LazyColumn(modifier = Modifier.weight(1f)) {
+                        items(menu.steps) { step ->
+                            Card(
+                                modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth(),
+                                colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))
+                            ) {
+                                Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                                    Box(modifier = Modifier.size(12.dp).background(step.color, shape = CircleShape))
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Text(step.name, modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold, color = Color.White)
+                                    val minutes = step.durationSeconds / 60
+                                    val seconds = step.durationSeconds % 60
+                                    Text(text = stringResource(id = R.string.label_step_info, minutes, seconds, step.tempo), fontSize = 14.sp, color = Color.LightGray)
+                                }
+                            }
                         }
                     }
                 }
             }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(DarkBackgroundColor)
+                    .padding(horizontal = 12.dp)
+            ) {
+                Button(
+                    onClick = onNavigateToRunning,
+                    modifier = Modifier.fillMaxWidth().height(112.dp),
+                    enabled = menu.steps.isNotEmpty(),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Text(text = stringResource(id = R.string.btn_start_training_long), fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+// 2. 【編集・削除ボタン】 管理用なので横並びで配置
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(
+                    onClick = onNavigateToEdit,
+                        modifier = Modifier.weight(1f).height(56.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)
+                    ) {
+                        Text(text = stringResource(id = R.string.btn_edit), color = Color.White)
+                    }
+                    Button(
+                        onClick = onDeleteMenu,
+                        modifier = Modifier.weight(1f).height(56.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC62828))
+                    ) {
+                        Text(text = stringResource(id = R.string.btn_delete), color = Color.White)
+                    }
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+// 3. 【シェアボタン】 優先度を下げて下に配置（サイズは標準）
+                Button(
+                    onClick = {
+                        val jsonText = gson.toJson(menu)
+                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        val clip = ClipData.newPlainText("IntervalTimerSingleMenu", jsonText)
+                        clipboard.setPrimaryClip(clip)
+                        Toast.makeText(context, toastMessage, Toast.LENGTH_SHORT).show()
+                              },
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))
+                ) {
+                    Text(text = stringResource(id = R.string.btn_share_menu), color = Color.White)
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                Button(
+                    onClick = onBack,
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)
+                ) {
+                    Text(text = stringResource(id = R.string.btn_back), color = Color.Gray)
+                }
+            }
         }
+    } else {
+        Column(modifier = Modifier.fillMaxSize().background(DarkBackgroundColor).padding(12.dp)) {
+            Text(menu.name, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
+            Spacer(modifier = Modifier.height(12.dp))
 
-        Spacer(modifier = Modifier.height(24.dp))
+            // ステップ一覧（ここは変更なし）
+            if (menu.steps.isEmpty()) {
+                Text(text = stringResource(id = R.string.msg_no_steps), color = Color.Gray)
+            } else {
+                LazyColumn(modifier = Modifier.weight(1f)) {
+                    items(menu.steps) { step ->
+                        Card(
+                            modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))
+                        ) {
+                            Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Box(modifier = Modifier.size(12.dp).background(step.color, shape = CircleShape))
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(step.name, modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold, color = Color.White)
+                                val minutes = step.durationSeconds / 60
+                                val seconds = step.durationSeconds % 60
+                                Text(text = stringResource(id = R.string.label_step_info, minutes, seconds, step.tempo), fontSize = 14.sp, color = Color.LightGray)
+                            }
+                        }
+                    }
+                }
+            }
 
-        // 1. 【開始ボタン】 最優先なので一番上に配置。高さを倍（112dp）にして押しやすく
-        Button(
-            onClick = onNavigateToRunning,
-            modifier = Modifier.fillMaxWidth().height(112.dp),
-            enabled = menu.steps.isNotEmpty(),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-        ) {
-            Text(text = stringResource(id = R.string.btn_start_training_long), fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
-        }
+            Spacer(modifier = Modifier.height(24.dp))
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // 2. 【編集・削除ボタン】 管理用なので横並びで配置
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            // 1. 【開始ボタン】 最優先なので一番上に配置。高さを倍（112dp）にして押しやすく
             Button(
-                onClick = onNavigateToEdit,
-                modifier = Modifier.weight(1f).height(56.dp),
+                onClick = onNavigateToRunning,
+                modifier = Modifier.fillMaxWidth().height(112.dp),
+                enabled = menu.steps.isNotEmpty(),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Text(text = stringResource(id = R.string.btn_start_training_long), fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 2. 【編集・削除ボタン】 管理用なので横並びで配置
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    onClick = onNavigateToEdit,
+                    modifier = Modifier.weight(1f).height(56.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)
+                ) {
+                    Text(text = stringResource(id = R.string.btn_edit), color = Color.White)
+                }
+                Button(
+                    onClick = onDeleteMenu,
+                    modifier = Modifier.weight(1f).height(56.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC62828))
+                ) {
+                    Text(text = stringResource(id = R.string.btn_delete), color = Color.White)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 3. 【シェアボタン】 優先度を下げて下に配置（サイズは標準）
+            Button(
+                onClick = {
+                    val jsonText = gson.toJson(menu)
+                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    val clip = ClipData.newPlainText("IntervalTimerSingleMenu", jsonText)
+                    clipboard.setPrimaryClip(clip)
+                    Toast.makeText(context, toastMessage, Toast.LENGTH_SHORT).show()
+                },
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))
+            ) {
+                Text(text = stringResource(id = R.string.btn_share_menu), color = Color.White)
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Button(
+                onClick = onBack,
+                modifier = Modifier.fillMaxWidth().height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)
             ) {
-                Text(text = stringResource(id = R.string.btn_edit), color = Color.White)
+                Text(text = stringResource(id = R.string.btn_back), color = Color.Gray)
             }
-            Button(
-                onClick = onDeleteMenu,
-                modifier = Modifier.weight(1f).height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC62828))
-            ) {
-                Text(text = stringResource(id = R.string.btn_delete), color = Color.White)
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // 3. 【シェアボタン】 優先度を下げて下に配置（サイズは標準）
-        Button(
-            onClick = {
-                val jsonText = gson.toJson(menu)
-                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                val clip = ClipData.newPlainText("IntervalTimerSingleMenu", jsonText)
-                clipboard.setPrimaryClip(clip)
-                Toast.makeText(context, toastMessage, Toast.LENGTH_SHORT).show()
-            },
-            modifier = Modifier.fillMaxWidth().height(56.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))
-        ) {
-            Text(text = stringResource(id = R.string.btn_share_menu), color = Color.White)
-        }
-
-        TextButton(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
-            Text(text = stringResource(id = R.string.btn_back), color = Color.Gray)
         }
     }
 }
@@ -1364,65 +1476,83 @@ fun MenuListScreen(menus: SnapshotStateList<TrainingMenu>, onSelectMenu: (Int) -
     val context = LocalContext.current
     val gson = remember { Gson() }
 
-    Column(modifier = Modifier.fillMaxSize().background(DarkBackgroundColor).padding(16.dp)) {
-        Text(text = stringResource(id = R.string.title_select_menu), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
-        Spacer(modifier = Modifier.height(8.dp))
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ){
+        Column(modifier = Modifier
+            .widthIn(max = 480.dp)
+            .fillMaxWidth()
+            .background(DarkBackgroundColor)
+            .padding(12.dp)) {
+            Text(text = stringResource(id = R.string.title_select_menu), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
+            Spacer(modifier = Modifier.height(12.dp))
 
-        val invalidDataMessage = stringResource(R.string.err_invalid_data)
-        val errorFormatMessage = stringResource(R.string.err_format_error)
-        val successMessageBase = stringResource(id = R.string.msg_imported, "")
-        val errClipboardEmptyMessage = stringResource(R.string.err_clipboard_empty)
+            val invalidDataMessage = stringResource(R.string.err_invalid_data)
+            val errorFormatMessage = stringResource(R.string.err_format_error)
+            val successMessageBase = stringResource(id = R.string.msg_imported, "")
+            val errClipboardEmptyMessage = stringResource(R.string.err_clipboard_empty)
 
-        Button(
-            onClick = {
-                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                val clipItem = clipboard.primaryClip?.getItemAt(0)
-                val jsonText = clipItem?.text?.toString()
-                if (!jsonText.isNullOrBlank()) {
-                    try {
-                        val importedMenu = gson.fromJson(jsonText, TrainingMenu::class.java)
-                        if (importedMenu != null && importedMenu.name.isNotBlank()) {
-                            menus.add(importedMenu)
-                            val finalMessage = successMessageBase.format(importedMenu.name)
-                            Toast.makeText(context, finalMessage, Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(context, invalidDataMessage, Toast.LENGTH_SHORT).show()
+            Button(
+                onClick = {
+                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    val clipItem = clipboard.primaryClip?.getItemAt(0)
+                    val jsonText = clipItem?.text?.toString()
+                    if (!jsonText.isNullOrBlank()) {
+                        try {
+                            val importedMenu = gson.fromJson(jsonText, TrainingMenu::class.java)
+                            if (importedMenu != null && importedMenu.name.isNotBlank()) {
+                                menus.add(importedMenu)
+                                val finalMessage = successMessageBase.format(importedMenu.name)
+                                Toast.makeText(context, finalMessage, Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(context, invalidDataMessage, Toast.LENGTH_SHORT).show()
+                            }
+                        } catch (_: Exception) {
+                            Toast.makeText(context, errorFormatMessage, Toast.LENGTH_SHORT).show()
                         }
-                    } catch (_: Exception) {
-                        Toast.makeText(context, errorFormatMessage, Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, errClipboardEmptyMessage, Toast.LENGTH_SHORT).show()
                     }
-                } else {
-                    Toast.makeText(context, errClipboardEmptyMessage, Toast.LENGTH_SHORT).show()
-                }
-            },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF6C00))
-        ) {
-            Text(text = stringResource(id = R.string.btn_import_clipboard), color = Color.White)
-        }
+                },
+                modifier = Modifier.fillMaxWidth().height(56.dp)
+                ,colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF6C00))
+            ) {
+                Text(text = stringResource(id = R.string.btn_import_clipboard), color = Color.White)
+            }
 
-        Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-        LazyColumn(modifier = Modifier.weight(1f)) {
-            itemsIndexed(menus) { index, menu ->
-                Card(
-                    modifier = Modifier.padding(vertical = 8.dp).fillMaxWidth().clickable { onSelectMenu(index) },
-                    colors = CardDefaults.cardColors(containerColor = DarkSurfaceColor)
-                ) {
-                    Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text(menu.name, fontSize = 20.sp, modifier = Modifier.weight(1f), color = Color.White)
-                        Text(text = stringResource(R.string.label_steps_count, menu.steps.size), fontSize = 14.sp, color = Color.Gray)
-                        Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color.White)
+            LazyColumn(modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                ,horizontalAlignment = Alignment.CenterHorizontally) {
+                itemsIndexed(menus) { index, menu ->
+                    Card(
+                        modifier = Modifier
+                            .padding(vertical = 4.dp)
+                            .fillMaxWidth()
+                            .clickable { onSelectMenu(index) },
+                        colors = CardDefaults.cardColors(containerColor = DarkSurfaceColor)
+                    ) {
+                        Row(modifier = Modifier
+                            .padding(12.dp)
+                            ,verticalAlignment = Alignment.CenterVertically) {
+                            Text(menu.name, fontSize = 20.sp, modifier = Modifier.weight(1f), color = Color.White)
+                            Text(text = stringResource(R.string.label_steps_count, menu.steps.size), fontSize = 14.sp, color = Color.Gray)
+                            Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color.White)
+                        }
                     }
                 }
             }
-        }
-        Button(
-            onClick = onBack,
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)
-        ) {
-            Text(text = stringResource(id = R.string.btn_back), color = Color.White)
+            Spacer(modifier = Modifier.height(12.dp))
+            Button(
+                onClick = onBack,
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)
+            ) {
+                Text(text = stringResource(id = R.string.btn_back), color = Color.White)
+            }
         }
     }
 }
