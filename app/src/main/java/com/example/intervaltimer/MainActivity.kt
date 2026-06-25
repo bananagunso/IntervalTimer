@@ -1058,7 +1058,6 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceEvenly
             ) {
-                // 1. 上部：全体の進捗ヘッダー（💡開始前も隠し要素として配置して高さを完全に一致させる）
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     Column(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                         if (!isStarting) {
@@ -1066,7 +1065,6 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                             Spacer(modifier = Modifier.height(12.dp))
                             RemainingTime(totalRemainingSeconds, totalMenuSeconds)
                         } else {
-                            // 開始前（準備中）のときは透明にして高さを確保
                             Box(modifier = Modifier.alpha(0f)) {
                                 ProgressBar(totalRemainingSeconds, totalMenuSeconds)
                                 Spacer(modifier = Modifier.height(12.dp))
@@ -1076,7 +1074,6 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                     }
                 }
 
-                // 2. 現在のステップ（💡ここも開始前と開始後で枠のサイズを完全に同じに維持する）
                 Box(
                     modifier = Modifier.fillMaxWidth().height(260.dp), // 260dpに固定
                     contentAlignment = Alignment.Center
@@ -1091,40 +1088,56 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                     }
                 }
 
-                // 3. 中間点：一時停止ボタンと大きくなった早送りボタンの並び
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    // 💡早送りボタンと同じサイズ（64dp）のダミー幅を左側に置いて一時停止を完全中央に
                     Spacer(modifier = Modifier.size(64.dp))
                     Spacer(modifier = Modifier.width(12.dp))
-                    PauseButton(isRunning = isRunning, onClick = { isRunning = !isRunning })
+
+                    val containerColor = if (isRunning) DarkSurfaceColor else Color(0xFFE57373)
+                    val icon = if (isRunning) Icons.Default.Pause else Icons.Default.PlayArrow
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Button(onClick = { isRunning = !isRunning }, modifier = Modifier.size(80.dp), shape = CircleShape, colors = ButtonDefaults.buttonColors(containerColor = containerColor), contentPadding = PaddingValues(0.dp)) {
+                            Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(40.dp), tint = Color.White)
+                        }
+                    }
+
+
                     Spacer(modifier = Modifier.width(12.dp))
                     if (!isStarting) {
                         FilledIconButton(
                             onClick = { navigateToNextStep() },
-                            modifier = Modifier.size(64.dp), // 48dpから64dpに拡大
+                            modifier = Modifier.size(64.dp),
                             colors = IconButtonDefaults.filledIconButtonColors(
                                 containerColor = DarkSurfaceColor,
                                 contentColor = Color.White
                             )
                         ) {
-                            Text("▶▶", fontSize = 18.sp, fontWeight = FontWeight.Bold) // 文字も少し大きく
+                            Text("▶▶", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                         }
                     } else {
-                        // 開始前は、一時停止の配置を狂わせないために透明な状態でスペースだけキープ
                         Spacer(modifier = Modifier.size(64.dp))
                     }
                 }
 
-                // 4. 次のステップ（💡開始前も高さをキープして、開始した瞬間に位置がズレるのを防ぐ）
                 Box(
-                    modifier = Modifier.fillMaxWidth().height(160.dp), // 160dpに固定
+                    modifier = Modifier.fillMaxWidth().height(160.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    NextStepsPreview(steps = steps, currentIndex = currentStepIndex, isVisible = !isStarting)
+//                    NextStepsPreview(steps = steps, currentIndex = currentStepIndex, isVisible = !isStarting)
+
+                    Column(modifier = Modifier.fillMaxWidth().height(160.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        if (!isStarting) {
+                            val next1 = steps.getOrNull(currentStepIndex + 1)
+                            if (next1 != null) NextStepRow(step = next1, label = stringResource(id = R.string.label_next)) else Spacer(modifier = Modifier.height(68.dp))
+                            val next2 = steps.getOrNull(currentStepIndex + 2)
+                            if (next2 != null) NextStepRow(step = next2, label = stringResource(id = R.string.label_after_that) ) else Spacer(modifier = Modifier.height(68.dp))
+                        } else {
+                            Spacer(modifier = Modifier.fillMaxSize())
+                        }
+                    }
                 }
             }
         }
@@ -1259,6 +1272,7 @@ fun MainStepContent(step: TimerStep?, remainingTime: Int, isRunning: Boolean) {
 }
 
 
+/*
 @Composable
 fun PauseButton(isRunning: Boolean, onClick: () -> Unit) {
     val containerColor = if (isRunning) DarkSurfaceColor else Color(0xFFE57373)
@@ -1269,6 +1283,9 @@ fun PauseButton(isRunning: Boolean, onClick: () -> Unit) {
         }
     }
 }
+*/
+
+/*
 @Composable
 fun NextStepsPreview(steps: List<TimerStep>, currentIndex: Int, isVisible: Boolean) {
     Column(modifier = Modifier.fillMaxWidth().height(160.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -1282,6 +1299,7 @@ fun NextStepsPreview(steps: List<TimerStep>, currentIndex: Int, isVisible: Boole
         }
     }
 }
+ */
 
 @Composable
 fun NextStepRow(step: TimerStep, label: String) {
