@@ -59,6 +59,7 @@ import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalConfiguration
 import kotlinx.coroutines.delay
@@ -101,7 +102,14 @@ class MainActivity : ComponentActivity() {
                         val type = object : TypeToken<List<String>>() {}.type
                         gson.fromJson(json, type)
                     } else {
-                        listOf("ウォームアップ", "メイン", "ファスト", "トルク", "レスト", "クールダウン")
+                        listOf(
+                            "ウォームアップ",
+                            "メイン",
+                            "ファスト",
+                            "トルク",
+                            "レスト",
+                            "クールダウン"
+                        )
                     }
                     mutableStateListOf<String>().apply { addAll(presets) }
                 }
@@ -123,12 +131,12 @@ class MainActivity : ComponentActivity() {
 
                 LaunchedEffect(allSavedMenus.toList()) {
                     val json = gson.toJson(allSavedMenus.toList())
-                    sharedPreferences.edit {putString("saved_menus", json)}
+                    sharedPreferences.edit { putString("saved_menus", json) }
                 }
 
                 LaunchedEffect(presetNames.toList()) {
                     val json = gson.toJson(presetNames.toList())
-                    sharedPreferences.edit {putString("preset_names", json)}
+                    sharedPreferences.edit { putString("preset_names", json) }
                 }
 
                 Surface(
@@ -163,7 +171,9 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                             composable("menu_manage/{menuIndex}") { backStackEntry ->
-                                val index = backStackEntry.arguments?.getString("menuIndex")?.toIntOrNull() ?: 0
+                                val index =
+                                    backStackEntry.arguments?.getString("menuIndex")?.toIntOrNull()
+                                        ?: 0
                                 if (index in allSavedMenus.indices) {
                                     MenuManageScreen(
                                         menu = allSavedMenus[index],
@@ -180,14 +190,18 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                             composable("running/{menuIndex}") { backStackEntry ->
-                                val index = backStackEntry.arguments?.getString("menuIndex")?.toIntOrNull() ?: 0
+                                val index =
+                                    backStackEntry.arguments?.getString("menuIndex")?.toIntOrNull()
+                                        ?: 0
                                 RunningScreen(
                                     steps = allSavedMenus[index].steps,
                                     onFinish = { navController.popBackStack() }
                                 )
                             }
                             composable("add_menu/{menuIndex}") { backStackEntry ->
-                                val menuIndex = backStackEntry.arguments?.getString("menuIndex")?.toIntOrNull() ?: -1
+                                val menuIndex =
+                                    backStackEntry.arguments?.getString("menuIndex")?.toIntOrNull()
+                                        ?: -1
                                 TimerScreen(
                                     presetNames = presetNames,
                                     allSavedMenus = allSavedMenus,
@@ -207,7 +221,11 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun TopScreen(onNavigateToAdd: () -> Unit, onNavigateToRunning: () -> Unit, onNavigateToEdit: () -> Unit) {
+fun TopScreen(
+    onNavigateToAdd: () -> Unit,
+    onNavigateToRunning: () -> Unit,
+    onNavigateToEdit: () -> Unit
+) {
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     Box(
@@ -221,8 +239,13 @@ fun TopScreen(onNavigateToAdd: () -> Unit, onNavigateToRunning: () -> Unit, onNa
                     .fillMaxWidth()
                     .background(DarkBackgroundColor)
                     .padding(12.dp)
-            ){
-                Text(text = stringResource(id = R.string.title_interval_timer), fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
+            ) {
+                Text(
+                    text = stringResource(id = R.string.title_interval_timer),
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = DarkTextColor
+                )
                 Spacer(modifier = Modifier.height(12.dp))
                 TopScreenButton(textRes = R.string.btn_create_menu, onNavigateToAdd)
                 Spacer(modifier = Modifier.height(12.dp))
@@ -238,7 +261,12 @@ fun TopScreen(onNavigateToAdd: () -> Unit, onNavigateToRunning: () -> Unit, onNa
                     .background(DarkBackgroundColor)
                     .padding(12.dp)
             ) {
-                Text(text = stringResource(id = R.string.title_interval_timer), fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
+                Text(
+                    text = stringResource(id = R.string.title_interval_timer),
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = DarkTextColor
+                )
                 Spacer(modifier = Modifier.height(12.dp))
                 TopScreenButton(textRes = R.string.btn_create_menu, onNavigateToAdd)
                 Spacer(modifier = Modifier.height(12.dp))
@@ -252,16 +280,20 @@ fun TopScreen(onNavigateToAdd: () -> Unit, onNavigateToRunning: () -> Unit, onNa
 
 
 @Composable
-fun TopScreenButton(textRes: Int, onClick: () -> Unit  ){
+fun TopScreenButton(textRes: Int, onClick: () -> Unit) {
     Button(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth().height(64.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = Color.White)
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(64.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = Color.White
+        )
     ) {
         Text(text = stringResource(id = textRes), fontSize = 28.sp)
     }
 }
-
 
 
 @SuppressLint("DefaultLocale")
@@ -306,18 +338,25 @@ fun TimerScreen(
 
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     if (isLandscape) {
-        Row(modifier = Modifier
-            .fillMaxSize()
-            .background(DarkBackgroundColor)
-            .padding(horizontal = 24.dp),
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(DarkBackgroundColor)
+                .padding(horizontal = 24.dp),
             verticalAlignment = Alignment.Bottom
         ) {
-            Column(modifier = Modifier
-                .fillMaxWidth(0.5f)
-                .background(DarkBackgroundColor)
-                .padding(horizontal = 12.dp),
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth(0.5f)
+                    .background(DarkBackgroundColor)
+                    .padding(horizontal = 12.dp),
             ) {
-                Text(text = stringResource(id = if (editMenuIndex == -1) R.string.title_create_menu else R.string.title_edit_menu), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
+                Text(
+                    text = stringResource(id = if (editMenuIndex == -1) R.string.title_create_menu else R.string.title_edit_menu),
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = DarkTextColor
+                )
                 Spacer(modifier = Modifier.height(12.dp))
                 //ステップ名
                 Box(modifier = Modifier.fillMaxWidth()) {
@@ -334,7 +373,11 @@ fun TimerScreen(
                         ),
                         trailingIcon = {
                             IconButton(onClick = { expanded = !expanded }) {
-                                Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = Color.White)
+                                Icon(
+                                    Icons.Default.ArrowDropDown,
+                                    contentDescription = null,
+                                    tint = Color.White
+                                )
                             }
                         }
                     )
@@ -357,9 +400,15 @@ fun TimerScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
                 //カラーラベル
-                Text(text = stringResource(id = R.string.label_color), fontSize = 14.sp, color = Color.Gray)
+                Text(
+                    text = stringResource(id = R.string.label_color),
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     colorOptions.forEachIndexed { index, color ->
@@ -389,17 +438,24 @@ fun TimerScreen(
                     }
                 }
                 //時間とRPMは横並び
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     OutlinedButton(
                         onClick = { showTimePicker = true },
-                        modifier = Modifier.weight(1f).height(56.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(56.dp),
                         shape = OutlinedTextFieldDefaults.shape
                     ) {
                         Text(text = "${inputMinutes}分 ${inputSeconds}秒", color = Color.White)
                     }
                     OutlinedButton(
                         onClick = { showTempoPicker = true },
-                        modifier = Modifier.weight(1f).height(56.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(56.dp),
                         shape = OutlinedTextFieldDefaults.shape
                     ) {
                         Text(text = "$inputTempo RPM", color = Color.White)
@@ -453,40 +509,61 @@ fun TimerScreen(
                             )
                         }
                     },
-                    modifier = Modifier.fillMaxWidth().height(56.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
                 ) {
                     Text(text = stringResource(id = R.string.btn_add_step))
                 }
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
-            Column(modifier = Modifier
-                .fillMaxWidth()
-                .background(DarkBackgroundColor)
-                .padding(horizontal = 12.dp),
-            ) {
-                LazyColumn(modifier = Modifier
-                    .weight(1f)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
                     .background(DarkBackgroundColor)
                     .padding(horizontal = 12.dp),
+            ) {
+                LazyColumn(
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(DarkBackgroundColor)
+                        .padding(horizontal = 12.dp),
                 ) {
                     itemsIndexed(tempSteps) { index, step ->
                         Card(
-                            modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth(),
+                            modifier = Modifier
+                                .padding(vertical = 4.dp)
+                                .fillMaxWidth(),
                             colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))
                         ) {
-                            Row(modifier = Modifier
-                                .padding(8.dp)
-                                ,verticalAlignment = Alignment.
-                                CenterVertically
+                            Row(
+                                modifier = Modifier
+                                    .padding(8.dp), verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Box(modifier = Modifier.size(12.dp).background(step.color, shape = CircleShape))
+                                Box(
+                                    modifier = Modifier
+                                        .size(12.dp)
+                                        .background(step.color, shape = CircleShape)
+                                )
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column(modifier = Modifier.weight(1f)) {
                                     val minutes = step.durationSeconds / 60
                                     val seconds = step.durationSeconds % 60
-                                    Text(step.name, fontWeight = FontWeight.Bold, color = Color.White)
-                                    Text(text = String.format("%02d:%02d", minutes, seconds)+" / ${step.tempo}RPM", fontSize = 14.sp, color = Color.LightGray)
+                                    Text(
+                                        step.name,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                    Text(
+                                        text = String.format(
+                                            "%02d:%02d",
+                                            minutes,
+                                            seconds
+                                        ) + " / ${step.tempo}RPM",
+                                        fontSize = 14.sp,
+                                        color = Color.LightGray
+                                    )
                                 }
 
                                 if (index > 0) {
@@ -512,7 +589,11 @@ fun TimerScreen(
                                 }
 
                                 IconButton(onClick = { tempSteps.remove(step) }) {
-                                    Icon(Icons.Default.Delete, contentDescription = null, tint = Color.LightGray)
+                                    Icon(
+                                        Icons.Default.Delete,
+                                        contentDescription = null,
+                                        tint = Color.LightGray
+                                    )
                                 }
                             }
                         }
@@ -524,7 +605,10 @@ fun TimerScreen(
                     onValueChange = { menuName = it },
                     label = { Text(text = stringResource(id = R.string.hint_menu_name)) },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White
+                    )
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 //保存ボタン
@@ -538,7 +622,9 @@ fun TimerScreen(
                         }
                         onSaveFinished()
                     },
-                    modifier = Modifier.fillMaxWidth().height(56.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
                 ) {
                     Text(text = stringResource(id = if (editMenuIndex == -1) R.string.btn_save_menu else R.string.btn_overwrite_menu))
                 }
@@ -546,12 +632,18 @@ fun TimerScreen(
             }
         }
     } else {
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .background(DarkBackgroundColor)
-            .padding(12.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(DarkBackgroundColor)
+                .padding(12.dp)
         ) {
-            Text(text = stringResource(id = if (editMenuIndex == -1) R.string.title_create_menu else R.string.title_edit_menu), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
+            Text(
+                text = stringResource(id = if (editMenuIndex == -1) R.string.title_create_menu else R.string.title_edit_menu),
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = DarkTextColor
+            )
             Spacer(modifier = Modifier.height(12.dp))
 
             //ステップ名
@@ -569,7 +661,11 @@ fun TimerScreen(
                     ),
                     trailingIcon = {
                         IconButton(onClick = { expanded = !expanded }) {
-                            Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = Color.White)
+                            Icon(
+                                Icons.Default.ArrowDropDown,
+                                contentDescription = null,
+                                tint = Color.White
+                            )
                         }
                     }
                 )
@@ -593,9 +689,15 @@ fun TimerScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             //カラーラベル
-            Text(text = stringResource(id = R.string.label_color), fontSize = 14.sp, color = Color.Gray)
+            Text(
+                text = stringResource(id = R.string.label_color),
+                fontSize = 14.sp,
+                color = Color.Gray
+            )
             Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 colorOptions.forEachIndexed { index, color ->
@@ -626,17 +728,24 @@ fun TimerScreen(
             }
 
 //時間とRPMは横並び
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 OutlinedButton(
                     onClick = { showTimePicker = true },
-                    modifier = Modifier.weight(1f).height(56.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(56.dp),
                     shape = OutlinedTextFieldDefaults.shape
                 ) {
                     Text(text = "${inputMinutes}分 ${inputSeconds}秒", color = Color.White)
                 }
                 OutlinedButton(
                     onClick = { showTempoPicker = true },
-                    modifier = Modifier.weight(1f).height(56.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(56.dp),
                     shape = OutlinedTextFieldDefaults.shape
                 ) {
                     Text(text = "$inputTempo RPM", color = Color.White)
@@ -689,25 +798,47 @@ fun TimerScreen(
                         )
                     }
                 },
-                modifier = Modifier.padding(top = 8.dp).fillMaxWidth().height(56.dp)
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .fillMaxWidth()
+                    .height(56.dp)
             ) {
                 Text(text = stringResource(id = R.string.btn_add_step))
             }
 
-            LazyColumn(modifier = Modifier.weight(1f).padding(vertical = 8.dp)) {
+            LazyColumn(modifier = Modifier
+                .weight(1f)
+                .padding(vertical = 8.dp)) {
                 itemsIndexed(tempSteps) { index, step ->
                     Card(
-                        modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth(),
+                        modifier = Modifier
+                            .padding(vertical = 4.dp)
+                            .fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))
                     ) {
-                        Row(modifier = Modifier.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Box(modifier = Modifier.size(12.dp).background(step.color, shape = CircleShape))
+                        Row(
+                            modifier = Modifier.padding(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(12.dp)
+                                    .background(step.color, shape = CircleShape)
+                            )
                             Spacer(modifier = Modifier.width(12.dp))
                             Column(modifier = Modifier.weight(1f)) {
                                 val minutes = step.durationSeconds / 60
                                 val seconds = step.durationSeconds % 60
                                 Text(step.name, fontWeight = FontWeight.Bold, color = Color.White)
-                                Text(text = String.format("%02d:%02d", minutes, seconds)+" / ${step.tempo}RPM", fontSize = 14.sp, color = Color.LightGray)
+                                Text(
+                                    text = String.format(
+                                        "%02d:%02d",
+                                        minutes,
+                                        seconds
+                                    ) + " / ${step.tempo}RPM",
+                                    fontSize = 14.sp,
+                                    color = Color.LightGray
+                                )
                             }
 
                             if (index > 0) {
@@ -733,7 +864,11 @@ fun TimerScreen(
                             }
 
                             IconButton(onClick = { tempSteps.remove(step) }) {
-                                Icon(Icons.Default.Delete, contentDescription = null, tint = Color.LightGray)
+                                Icon(
+                                    Icons.Default.Delete,
+                                    contentDescription = null,
+                                    tint = Color.LightGray
+                                )
                             }
                         }
                     }
@@ -745,7 +880,10 @@ fun TimerScreen(
                 onValueChange = { menuName = it },
                 label = { Text(text = stringResource(id = R.string.hint_menu_name)) },
                 modifier = Modifier.fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White
+                )
             )
             Spacer(modifier = Modifier.height(12.dp))
 //保存ボタン
@@ -759,7 +897,9 @@ fun TimerScreen(
                     }
                     onSaveFinished()
                 },
-                modifier = Modifier.fillMaxWidth().height(56.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
             ) {
                 Text(text = stringResource(id = if (editMenuIndex == -1) R.string.btn_save_menu else R.string.btn_overwrite_menu))
             }
@@ -777,7 +917,9 @@ fun TimeDrumPicker(
     var seconds by rememberSaveable { mutableIntStateOf(initialSeconds) }
 
     Row(
-        modifier = Modifier.fillMaxWidth().height(150.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(150.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically // 【重要】これで縦位置が揃います
     ) {
@@ -791,7 +933,10 @@ fun TimeDrumPicker(
         }
 
         // 秒エリア（ドラム＋文字）
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 12.dp)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(start = 12.dp)
+        ) {
             DigitWheel(0..59, seconds) {
                 seconds = it
                 onTimeSelected(minutes, seconds)
@@ -800,6 +945,7 @@ fun TimeDrumPicker(
         }
     }
 }
+
 @Composable
 fun RpmDrumPicker(
     initialRpm: Int,
@@ -817,7 +963,12 @@ fun RpmDrumPicker(
         if (newRpm >= 30) onRpmSelected(newRpm)
     }
 
-    Row(modifier = Modifier.fillMaxWidth().height(150.dp), horizontalArrangement = Arrangement.Center) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(150.dp),
+        horizontalArrangement = Arrangement.Center
+    ) {
         // 百の位 (0-2)
         DigitWheel(range = 0..2, value = hundreds) { hundreds = it }
         // 十の位 (0-9)
@@ -828,7 +979,12 @@ fun RpmDrumPicker(
 }
 
 @Composable
-fun DigitWheel(range: IntRange, value: Int, modifier: Modifier = Modifier, onValueChange: (Int) -> Unit) {
+fun DigitWheel(
+    range: IntRange,
+    value: Int,
+    modifier: Modifier = Modifier,
+    onValueChange: (Int) -> Unit
+) {
     // 1. スクロール状態を管理する state を作成
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = value)
     // 2. スナップ（ピタッと止まる）動作を定義
@@ -860,11 +1016,20 @@ fun DigitWheel(range: IntRange, value: Int, modifier: Modifier = Modifier, onVal
         }
     }
 }
+
 @Composable
 fun PresetEditScreen(presetNames: SnapshotStateList<String>) {
     var newPreset by rememberSaveable { mutableStateOf("") }
-    Column(modifier = Modifier.fillMaxSize().background(DarkBackgroundColor).padding(12.dp)) {
-        Text(text = stringResource(id = R.string.title_preset_edit), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .background(DarkBackgroundColor)
+        .padding(12.dp)) {
+        Text(
+            text = stringResource(id = R.string.title_preset_edit),
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            color = DarkTextColor
+        )
         Spacer(modifier = Modifier.height(12.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             OutlinedTextField(
@@ -872,11 +1037,18 @@ fun PresetEditScreen(presetNames: SnapshotStateList<String>) {
                 onValueChange = { newPreset = it },
                 label = { Text(text = stringResource(id = R.string.hint_new_preset_name)) },
                 modifier = Modifier.weight(1f),
-                colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White
+                )
             )
             Spacer(modifier = Modifier.width(12.dp))
             Button(
-                onClick = { if(newPreset.isNotBlank()){ presetNames.add(newPreset); newPreset="" } },
+                onClick = {
+                    if (newPreset.isNotBlank()) {
+                        presetNames.add(newPreset); newPreset = ""
+                    }
+                },
                 modifier = Modifier.height(56.dp)
             ) {
                 Text(text = stringResource(id = R.string.btn_add))
@@ -887,9 +1059,16 @@ fun PresetEditScreen(presetNames: SnapshotStateList<String>) {
             items(presetNames) { name ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
                 ) {
-                    Text(name, modifier = Modifier.weight(1f), fontSize = 18.sp, color = Color.White)
+                    Text(
+                        name,
+                        modifier = Modifier.weight(1f),
+                        fontSize = 18.sp,
+                        color = Color.White
+                    )
                     IconButton(onClick = { presetNames.remove(name) }) {
                         Icon(Icons.Default.Delete, contentDescription = null, tint = Color.Red)
                     }
@@ -904,7 +1083,11 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
 
 
     var currentStepIndex by rememberSaveable { mutableIntStateOf(0) }
-    var remainingTime by rememberSaveable { mutableIntStateOf(steps.getOrNull(0)?.durationSeconds ?: 0) }
+    var remainingTime by rememberSaveable {
+        mutableIntStateOf(
+            steps.getOrNull(0)?.durationSeconds ?: 0
+        )
+    }
     var isRunning by rememberSaveable { mutableStateOf(true) }
     var startDelay by rememberSaveable { mutableIntStateOf(5) }
     var isStarting by rememberSaveable { mutableStateOf(true) }
@@ -1055,17 +1238,17 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
             Column(
                 modifier = Modifier
                     .fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    ProgressBar(totalRemainingSeconds, totalMenuSeconds)
-                }
+                ProgressBar(totalRemainingSeconds, totalMenuSeconds)
                 Spacer(modifier = Modifier.height(12.dp))
                 RemainingTime(totalRemainingSeconds, totalMenuSeconds)
+                Spacer(modifier = Modifier.height(12.dp))
 
                 val step: TimerStep = steps.getOrNull(currentStepIndex) ?: return
                 var isPulse by remember { mutableStateOf(false) }
-                val tempoInterval = remember(step.tempo) { if (step.tempo > 0) (60000 / step.tempo).toLong() else 0L }
+                val tempoInterval =
+                    remember(step.tempo) { if (step.tempo > 0) (60000 / step.tempo).toLong() else 0L }
                 val currentRemainingTime by rememberUpdatedState(remainingTime)
                 if (isRunning && tempoInterval > 0L) {
                     LaunchedEffect(step.tempo, true) {
@@ -1095,7 +1278,9 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                 }
                 val baseColor = step.color
                 val animatedColor by animateColorAsState(
-                    targetValue = if (isPulse) baseColor.copy(alpha = 1.0f) else baseColor.copy(alpha = 0.4f),
+                    targetValue = if (isPulse) baseColor.copy(alpha = 1.0f) else baseColor.copy(
+                        alpha = 0.4f
+                    ),
                     animationSpec = tween(durationMillis = 50, easing = LinearEasing),
                     label = "Pulse"
                 )
@@ -1106,20 +1291,40 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                     elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
                     Column(
-                        modifier = Modifier.padding(vertical = 12.dp, horizontal = 8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 12.dp, horizontal = 8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
-                        Text(step.name, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = contentColor)
+                        Text(
+                            step.name,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = contentColor
+                        )
                         Spacer(modifier = Modifier.height(12.dp))
-                        Text("${step.tempo} RPM", fontSize = 42.sp, fontWeight = FontWeight.Black, color = contentColor)
+                        Text(
+                            "${step.tempo} RPM",
+                            fontSize = 42.sp,
+                            fontWeight = FontWeight.Black,
+                            color = contentColor
+                        )
                         Spacer(modifier = Modifier.height(12.dp))
                         val minutes = step.durationSeconds / 60
                         val seconds = step.durationSeconds % 60
                         val remainingTimeMinutes = remainingTime / 60
                         val remainingTimeSeconds = remainingTime % 60
                         var dynamicFontSize by remember { mutableStateOf(42.sp) }
-                        Text(text = String.format(Locale.US, "%02d:%02d / %02d:%02d", remainingTimeMinutes, remainingTimeSeconds, minutes, seconds),
+                        Text(
+                            text = String.format(
+                                Locale.US,
+                                "%02d:%02d / %02d:%02d",
+                                remainingTimeMinutes,
+                                remainingTimeSeconds,
+                                minutes,
+                                seconds
+                            ),
                             fontSize = dynamicFontSize,
                             fontWeight = FontWeight.ExtraBold,
                             color = contentColor,
@@ -1132,221 +1337,131 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                             }
                         )
                     }
-                }
-            }
-        }
-        /*
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Spacer(modifier = Modifier.size(64.dp))
-            Spacer(modifier = Modifier.width(12.dp))
+//            Spacer(modifier = Modifier.size(64.dp))
+//            Spacer(modifier = Modifier.width(12.dp))
 
-            val containerColor = if (isRunning) DarkSurfaceColor else Color(0xFFE57373)
-            val icon = if (isRunning) Icons.Default.Pause else Icons.Default.PlayArrow
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Button(onClick = { isRunning = !isRunning }, modifier = Modifier.size(80.dp), shape = CircleShape, colors = ButtonDefaults.buttonColors(containerColor = containerColor), contentPadding = PaddingValues(0.dp)) {
-                    Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(40.dp), tint = Color.White)
-                }
-            }
-        }
-
-         */
-
-
-        /*
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(DarkBackgroundColor)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 12.dp, vertical = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceEvenly
-            ) {
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Column(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        if (!isStarting) {
-                            ProgressBar(totalRemainingSeconds, totalMenuSeconds)
-                            Spacer(modifier = Modifier.height(12.dp))
-                            RemainingTime(totalRemainingSeconds, totalMenuSeconds)
-                        } else {
-                            Box(modifier = Modifier.alpha(0f)) {
-                                ProgressBar(totalRemainingSeconds, totalMenuSeconds)
-                                Spacer(modifier = Modifier.height(12.dp))
-                                RemainingTime(totalRemainingSeconds, totalMenuSeconds)
-                            }
-                        }
-                    }
-                }
-
-                Box(
-                    modifier = Modifier.fillMaxWidth().height(260.dp), // 260dpに固定
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (isStarting) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(text = stringResource(id = R.string.label_preparing), fontSize = 24.sp, color = Color.Gray)
-                            Text("$startDelay", fontSize = 120.sp, fontWeight = FontWeight.Black, color = if (isRunning) Color.Red else Color.Gray)
-                        }
-
-                    } else {
-//                      MainStepContent(steps.getOrNull(currentStepIndex), remainingTime, isRunning)
-//                        fun MainStepContent(step: TimerStep?, remainingTime: Int, isRunning: Boolean) {
-                        val step: TimerStep = steps.getOrNull(currentStepIndex) ?: return
-                        var isPulse by remember { mutableStateOf(false) }
-                        val tempoInterval = remember(step.tempo) { if (step.tempo > 0) (60000 / step.tempo).toLong() else 0L }
-                        val currentRemainingTime by rememberUpdatedState(remainingTime)
-                        if (isRunning && tempoInterval > 0L) {
-                            LaunchedEffect(step.tempo, true) {
-                                val toneG = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
-                                try {
-                                    var nextTick = System.currentTimeMillis()
-                                    while (isActive) {
-                                        if (!isRunning || currentRemainingTime <= 3) {
-                                            delay(100L.milliseconds)
-                                            nextTick = System.currentTimeMillis()
-                                            continue
-                                        }
-                                        nextTick += tempoInterval
-                                        isPulse = true
-                                        toneG.startTone(ToneGenerator.TONE_PROP_BEEP, 40)
-
-                                        delay(60L.milliseconds)
-                                        isPulse = false
-                                        val wait = nextTick - System.currentTimeMillis()
-                                        if (wait > 0) {
-                                            delay(wait.milliseconds)
-                                        }
-                                    }
-                                } finally {
-                                    toneG.release()
-                                }
-                            }
-                        }
-
-                        val baseColor = step.color
-                        val animatedColor by animateColorAsState(
-                            targetValue = if (isPulse) baseColor.copy(alpha = 1.0f) else baseColor.copy(alpha = 0.4f),
-                            animationSpec = tween(durationMillis = 50, easing = LinearEasing),
-                            label = "Pulse"
-                        )
-                        val contentColor = if (baseColor.luminance() > 0.5f) Color.Black else Color.White
-                        Card(
-                            modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp),
-                            colors = CardDefaults.cardColors(containerColor = animatedColor),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier.fillMaxSize().padding(vertical = 12.dp, horizontal = 8.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                Text(step.name, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = contentColor)
-                                Spacer(modifier = Modifier.height(12.dp))
-                                Text("${step.tempo} RPM", fontSize = 42.sp, fontWeight = FontWeight.Black, color = contentColor)
-                                Spacer(modifier = Modifier.height(12.dp))
-                                val minutes = step.durationSeconds / 60
-                                val seconds = step.durationSeconds % 60
-                                val remainingTimeMinutes = remainingTime / 60
-                                val remainingTimeSeconds = remainingTime % 60
-                                var dynamicFontSize by remember { mutableStateOf(42.sp) }
-                                Text(text = String.format(Locale.US, "%02d:%02d / %02d:%02d", remainingTimeMinutes, remainingTimeSeconds, minutes, seconds),
-                                    fontSize = dynamicFontSize,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    color = contentColor,
-                                    maxLines = 1,
-                                    softWrap = false,
-                                    onTextLayout = { result ->
-                                        if (result.didOverflowWidth && dynamicFontSize > 24.sp) {
-                                            dynamicFontSize *= 0.9f
-                                        }
-                                    }
-                                )
-                            }
-                        }
-                    }
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Spacer(modifier = Modifier.size(64.dp))
-                    Spacer(modifier = Modifier.width(12.dp))
-
-                    val containerColor = if (isRunning) DarkSurfaceColor else Color(0xFFE57373)
-                    val icon = if (isRunning) Icons.Default.Pause else Icons.Default.PlayArrow
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Button(onClick = { isRunning = !isRunning }, modifier = Modifier.size(80.dp), shape = CircleShape, colors = ButtonDefaults.buttonColors(containerColor = containerColor), contentPadding = PaddingValues(0.dp)) {
-                            Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(40.dp), tint = Color.White)
+                    val playButtonColor = if (isRunning) DarkSurfaceColor else Color(0xFFE57373)
+                    val iconPlay = if (isRunning) Icons.Default.Pause else Icons.Default.PlayArrow
+                    val iconNext = Icons.Filled.SkipNext
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        // ダミー
+                    }
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Button(
+                            onClick = { isRunning = !isRunning },
+                            modifier = Modifier.size(80.dp),
+                            shape = CircleShape,
+                            colors = ButtonDefaults.buttonColors(containerColor = playButtonColor),
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Icon(
+                                imageVector = iconPlay,
+                                contentDescription = null,
+                                modifier = Modifier.size(40.dp),
+                                tint = Color.White
+                            )
                         }
                     }
-
-                    Spacer(modifier = Modifier.width(12.dp))
-                    if (!isStarting) {
-                        FilledIconButton(
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Button(
                             onClick = { navigateToNextStep() },
-                            modifier = Modifier.size(64.dp),
-                            colors = IconButtonDefaults.filledIconButtonColors(
-                                containerColor = DarkSurfaceColor,
-                                contentColor = Color.White
-                            )
+                            modifier = Modifier
+                                .size(64.dp)
+                                .offset(x = (-16).dp),
+                            shape = CircleShape,
+                            colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor),
+                            contentPadding = PaddingValues(0.dp)
                         ) {
-                            Text("▶▶", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                            Icon(
+                                imageVector = iconNext,
+                                contentDescription = null,
+                                modifier = Modifier.size(40.dp),
+                                tint = Color.White
+                            )
                         }
-                    } else {
-                        Spacer(modifier = Modifier.size(64.dp))
                     }
                 }
-
-                Box(
-                    modifier = Modifier.fillMaxWidth().height(160.dp),
-                    contentAlignment = Alignment.Center
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-//                    NextStepsPreview(steps = steps, currentIndex = currentStepIndex, isVisible = !isStarting)
-
-                    Column(modifier = Modifier.fillMaxWidth().height(160.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        if (!isStarting) {
-                            val next1 = steps.getOrNull(currentStepIndex + 1)
-                            if (next1 != null) NextStepRow(step = next1, label = stringResource(id = R.string.label_next)) else Spacer(modifier = Modifier.height(68.dp))
-                            val next2 = steps.getOrNull(currentStepIndex + 2)
-                            if (next2 != null) NextStepRow(step = next2, label = stringResource(id = R.string.label_after_that) ) else Spacer(modifier = Modifier.height(68.dp))
-                        } else {
-                            Spacer(modifier = Modifier.fillMaxSize())
-                        }
+                    if (!isStarting) {
+                        val next1 = steps.getOrNull(currentStepIndex + 1)
+                        if (next1 != null) NextStepRow(
+                            step = next1,
+                            label = stringResource(id = R.string.label_next)
+                        ) else Spacer(modifier = Modifier)
+                        val next2 = steps.getOrNull(currentStepIndex + 2)
+                        if (next2 != null) NextStepRow(
+                            step = next2,
+                            label = stringResource(id = R.string.label_after_that)
+                        ) else Spacer(modifier = Modifier)
+                    } else {
+                        Spacer(modifier = Modifier.fillMaxSize())
                     }
                 }
             }
         }
-         */
     }
 }
 
 @Composable
 fun FinishedScreen(onDone: () -> Unit) {
-    Box(modifier = Modifier.fillMaxSize().background(DarkBackgroundColor), contentAlignment = Alignment.Center) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(DarkBackgroundColor),
+        contentAlignment = Alignment.Center
+    ) {
         Column(
             horizontalAlignment = Alignment
                 .CenterHorizontally
         ) {
-            Text(text = stringResource(id = R.string.finished_message), fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text(
+                text = stringResource(id = R.string.finished_message),
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
             Spacer(modifier = Modifier.height(12.dp))
-            Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(100.dp), tint = Color(0xFF81C784))
+            Icon(
+                Icons.Default.CheckCircle,
+                contentDescription = null,
+                modifier = Modifier.size(100.dp),
+                tint = Color(0xFF81C784)
+            )
             Spacer(modifier = Modifier.height(48.dp))
-            Button(onClick = onDone, modifier = Modifier.fillMaxWidth(0.6f).height(56.dp), colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)) {
-                Text(text = stringResource(id = R.string.btn_back), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Button(
+                onClick = onDone,
+                modifier = Modifier
+                    .fillMaxWidth(0.6f)
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)
+            ) {
+                Text(
+                    text = stringResource(id = R.string.btn_back),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
             }
         }
     }
 }
-
-
 
 
 @Composable
@@ -1359,7 +1474,10 @@ fun ProgressBar(remaining: Int, total: Int) {
         }
     LinearProgressIndicator(
         progress = { progress },
-        modifier = Modifier.fillMaxWidth().height(10.dp).clip(CircleShape),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(10.dp)
+            .clip(CircleShape),
         color = Color.Cyan,
         trackColor = DarkSurfaceColor
     )
@@ -1367,141 +1485,74 @@ fun ProgressBar(remaining: Int, total: Int) {
 
 @Composable
 fun RemainingTime(remaining: Int, total: Int) {
-    Text(text = stringResource(id = R.string.label_total_remaining), fontSize = 12.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+    Text(
+        text = stringResource(id = R.string.label_total_remaining),
+        fontSize = 12.sp,
+        color = Color.Gray,
+        fontWeight = FontWeight.Bold
+    )
     Row(verticalAlignment = Alignment.Bottom) {
-        Text(String.format(Locale.US, "%02d:%02d", remaining / 60, remaining % 60), fontSize = 32.sp, fontWeight = FontWeight.Black, color = Color.White)
-        Text(String.format(Locale.US, " / %02d:%02d", total / 60, total % 60), fontSize = 18.sp, fontWeight = FontWeight.Medium, color = Color.Gray, modifier = Modifier.padding(bottom = 4.dp, start = 4.dp))
+        Text(
+            String.format(Locale.US, "%02d:%02d", remaining / 60, remaining % 60),
+            fontSize = 32.sp,
+            fontWeight = FontWeight.Black,
+            color = Color.White
+        )
+        Text(
+            String.format(Locale.US, " / %02d:%02d", total / 60, total % 60),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color.Gray,
+            modifier = Modifier.padding(bottom = 4.dp, start = 4.dp)
+        )
     }
 }
 
-/*
-@SuppressLint("DefaultLocale")
 @Composable
-fun MainStepContent(step: TimerStep?, remainingTime: Int, isRunning: Boolean) {
-    if (step == null) return
-    var isPulse by remember { mutableStateOf(false) }
-    val tempoInterval = remember(step.tempo) { if (step.tempo > 0) (60000 / step.tempo).toLong() else 0L }
-
-    val currentRemainingTime by rememberUpdatedState(remainingTime)
-    if (isRunning && tempoInterval > 0L) {
-        LaunchedEffect(step.tempo, true) {
-            val toneG = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
-            try {
-                var nextTick = System.currentTimeMillis()
-                while (isActive) {
-                    if (!isRunning || currentRemainingTime <= 3) {
-                        delay(100L.milliseconds)
-                        nextTick = System.currentTimeMillis()
-                        continue
-                    }
-                    nextTick += tempoInterval
-                    isPulse = true
-                    toneG.startTone(ToneGenerator.TONE_PROP_BEEP, 40)
-
-                    delay(60L.milliseconds)
-                    isPulse = false
-                    val wait = nextTick - System.currentTimeMillis()
-                    if (wait > 0) {
-                        delay(wait.milliseconds)
-                    }
-                }
-            } finally {
-                toneG.release()
-            }
-        }
-    }
-
-    val baseColor = step.color
-    val animatedColor by animateColorAsState(
-        targetValue = if (isPulse) baseColor.copy(alpha = 1.0f) else baseColor.copy(alpha = 0.4f),
-        animationSpec = tween(durationMillis = 50, easing = LinearEasing),
-        label = "Pulse"
-    )
-    val contentColor = if (baseColor.luminance() > 0.5f) Color.Black else Color.White
-
+fun NextStepRow(step: TimerStep, label: String) {
     Card(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = animatedColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize().padding(vertical = 12.dp, horizontal = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(step.name, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = contentColor)
-            Spacer(modifier = Modifier.height(12.dp))
-            Text("${step.tempo} RPM", fontSize = 42.sp, fontWeight = FontWeight.Black, color = contentColor)
-            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                "$label: ${step.name}",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White.copy(alpha = 0.9f),
+                modifier = Modifier.weight(1f)
+            )
             val minutes = step.durationSeconds / 60
             val seconds = step.durationSeconds % 60
-            val remainingTimeMinutes = remainingTime / 60
-            val remainingTimeSeconds = remainingTime % 60
-            var dynamicFontSize by remember { mutableStateOf(42.sp) }
-            Text(text = String.format("%02d:%02d / %02d:%02d", remainingTimeMinutes, remainingTimeSeconds, minutes, seconds),
-                fontSize = dynamicFontSize,
-                fontWeight = FontWeight.ExtraBold,
-                color = contentColor,
-                maxLines = 1,
-                softWrap = false,
-                onTextLayout = { result ->
-                    // もし横幅が足りていない（didOverflowWidth）なら、サイズを少し下げる
-                    if (result.didOverflowWidth && dynamicFontSize > 24.sp) {
-                        dynamicFontSize *= 0.9f
-                    }
-                }
+            Text(
+                text = stringResource(
+                    id = R.string.label_tempo_and_seconds,
+                    step.tempo,
+                    minutes,
+                    seconds
+                ),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.White.copy(alpha = 0.8f)
             )
         }
     }
 }
-*/
-
-
-/*
-@Composable
-fun PauseButton(isRunning: Boolean, onClick: () -> Unit) {
-    val containerColor = if (isRunning) DarkSurfaceColor else Color(0xFFE57373)
-    val icon = if (isRunning) Icons.Default.Pause else Icons.Default.PlayArrow
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Button(onClick = onClick, modifier = Modifier.size(80.dp), shape = CircleShape, colors = ButtonDefaults.buttonColors(containerColor = containerColor), contentPadding = PaddingValues(0.dp)) {
-            Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(40.dp), tint = Color.White)
-        }
-    }
-}
-*/
-
-/*
-@Composable
-fun NextStepsPreview(steps: List<TimerStep>, currentIndex: Int, isVisible: Boolean) {
-    Column(modifier = Modifier.fillMaxWidth().height(160.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        if (isVisible) {
-            val next1 = steps.getOrNull(currentIndex + 1)
-            if (next1 != null) NextStepRow(step = next1, label = stringResource(id = R.string.label_next)) else Spacer(modifier = Modifier.height(68.dp))
-            val next2 = steps.getOrNull(currentIndex + 2)
-            if (next2 != null) NextStepRow(step = next2, label = stringResource(id = R.string.label_after_that) ) else Spacer(modifier = Modifier.height(68.dp))
-        } else {
-            Spacer(modifier = Modifier.fillMaxSize())
-        }
-    }
-}
- */
-
-@Composable
-fun NextStepRow(step: TimerStep, label: String) {
-    Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))) {
-        Row(modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("$label: ${step.name}", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White.copy(alpha = 0.9f), modifier = Modifier.weight(1f))
-            val minutes = step.durationSeconds / 60
-            val seconds = step.durationSeconds % 60
-            Text(text = stringResource(id = R.string.label_tempo_and_seconds, step.tempo, minutes, seconds), fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color.White.copy(alpha = 0.8f))
-        }
-    }
-}
-
 
 
 @Composable
-fun MenuManageScreen(menu: TrainingMenu, onNavigateToRunning: () -> Unit, onNavigateToEdit: () -> Unit, onDeleteMenu: () -> Unit, onBack: () -> Unit) {
+fun MenuManageScreen(
+    menu: TrainingMenu,
+    onNavigateToRunning: () -> Unit,
+    onNavigateToEdit: () -> Unit,
+    onDeleteMenu: () -> Unit,
+    onBack: () -> Unit
+) {
     val context = LocalContext.current
     val gson = remember { Gson() }
     val toastMessage = stringResource(id = R.string.msg_copied, menu.name)
@@ -1511,8 +1562,9 @@ fun MenuManageScreen(menu: TrainingMenu, onNavigateToRunning: () -> Unit, onNavi
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .background(DarkBackgroundColor).padding(horizontal = 24.dp)
-            ,verticalAlignment = Alignment.Bottom
+                .background(DarkBackgroundColor)
+                .padding(horizontal = 24.dp),
+            verticalAlignment = Alignment.Bottom
         ) {
             Column(
                 modifier = Modifier
@@ -1520,7 +1572,12 @@ fun MenuManageScreen(menu: TrainingMenu, onNavigateToRunning: () -> Unit, onNavi
                     .background(DarkBackgroundColor)
                     .padding(horizontal = 12.dp)
             ) {
-                Text(menu.name, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
+                Text(
+                    menu.name,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = DarkTextColor
+                )
                 Spacer(modifier = Modifier.height(12.dp))
                 if (menu.steps.isEmpty()) {
                     Text(text = stringResource(id = R.string.msg_no_steps), color = Color.Gray)
@@ -1528,16 +1585,42 @@ fun MenuManageScreen(menu: TrainingMenu, onNavigateToRunning: () -> Unit, onNavi
                     LazyColumn(modifier = Modifier.weight(1f)) {
                         items(menu.steps) { step ->
                             Card(
-                                modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth(),
-                                colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))
+                                modifier = Modifier
+                                    .padding(vertical = 4.dp)
+                                    .fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = step.color.copy(
+                                        alpha = 0.4f
+                                    )
+                                )
                             ) {
-                                Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                                    Box(modifier = Modifier.size(12.dp).background(step.color, shape = CircleShape))
+                                Row(
+                                    modifier = Modifier.padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(12.dp)
+                                            .background(step.color, shape = CircleShape)
+                                    )
                                     Spacer(modifier = Modifier.width(12.dp))
-                                    Text(step.name, modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold, color = Color.White)
+                                    Text(
+                                        step.name,
+                                        modifier = Modifier.weight(1f),
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                        fontSize = 18.sp
+                                    )
                                     val minutes = step.durationSeconds / 60
                                     val seconds = step.durationSeconds % 60
-                                    Text(text = stringResource(id = R.string.label_step_info, minutes, seconds, step.tempo), fontSize = 14.sp, color = Color.LightGray)
+                                    Text(
+                                        text = stringResource(
+                                            id = R.string.label_step_info,
+                                            minutes,
+                                            seconds,
+                                            step.tempo
+                                        ), fontSize = 16.sp, color = Color.LightGray
+                                    )
                                 }
                             }
                         }
@@ -1552,25 +1635,39 @@ fun MenuManageScreen(menu: TrainingMenu, onNavigateToRunning: () -> Unit, onNavi
             ) {
                 Button(
                     onClick = onNavigateToRunning,
-                    modifier = Modifier.fillMaxWidth().height(112.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(112.dp),
                     enabled = menu.steps.isNotEmpty(),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Text(text = stringResource(id = R.string.btn_start_training_long), fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
+                    Text(
+                        text = stringResource(id = R.string.btn_start_training_long),
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color.White
+                    )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
 // 2. 【編集・削除ボタン】 管理用なので横並びで配置
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     Button(
-                    onClick = onNavigateToEdit,
-                        modifier = Modifier.weight(1f).height(56.dp),
+                        onClick = onNavigateToEdit,
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(56.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)
                     ) {
                         Text(text = stringResource(id = R.string.btn_edit), color = Color.White)
                     }
                     Button(
                         onClick = onDeleteMenu,
-                        modifier = Modifier.weight(1f).height(56.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(56.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC62828))
                     ) {
                         Text(text = stringResource(id = R.string.btn_delete), color = Color.White)
@@ -1581,12 +1678,15 @@ fun MenuManageScreen(menu: TrainingMenu, onNavigateToRunning: () -> Unit, onNavi
                 Button(
                     onClick = {
                         val jsonText = gson.toJson(menu)
-                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        val clipboard =
+                            context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                         val clip = ClipData.newPlainText("IntervalTimerSingleMenu", jsonText)
                         clipboard.setPrimaryClip(clip)
                         Toast.makeText(context, toastMessage, Toast.LENGTH_SHORT).show()
-                              },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))
                 ) {
                     Text(text = stringResource(id = R.string.btn_share_menu), color = Color.White)
@@ -1594,7 +1694,9 @@ fun MenuManageScreen(menu: TrainingMenu, onNavigateToRunning: () -> Unit, onNavi
                 Spacer(modifier = Modifier.height(12.dp))
                 Button(
                     onClick = onBack,
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)
                 ) {
                     Text(text = stringResource(id = R.string.btn_back), color = Color.Gray)
@@ -1602,8 +1704,11 @@ fun MenuManageScreen(menu: TrainingMenu, onNavigateToRunning: () -> Unit, onNavi
             }
         }
     } else {
-        Column(modifier = Modifier.fillMaxSize().background(DarkBackgroundColor).padding(12.dp)) {
-            Text(menu.name, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .background(DarkBackgroundColor)
+            .padding(12.dp)) {
+            Text(menu.name, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
             Spacer(modifier = Modifier.height(12.dp))
 
             // ステップ一覧（ここは変更なし）
@@ -1613,16 +1718,37 @@ fun MenuManageScreen(menu: TrainingMenu, onNavigateToRunning: () -> Unit, onNavi
                 LazyColumn(modifier = Modifier.weight(1f)) {
                     items(menu.steps) { step ->
                         Card(
-                            modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth(),
+                            modifier = Modifier
+                                .padding(vertical = 4.dp)
+                                .fillMaxWidth(),
                             colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))
                         ) {
-                            Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Box(modifier = Modifier.size(12.dp).background(step.color, shape = CircleShape))
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(12.dp)
+                                        .background(step.color, shape = CircleShape)
+                                )
                                 Spacer(modifier = Modifier.width(12.dp))
-                                Text(step.name, modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold, color = Color.White)
+                                Text(
+                                    step.name,
+                                    modifier = Modifier.weight(1f),
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
                                 val minutes = step.durationSeconds / 60
                                 val seconds = step.durationSeconds % 60
-                                Text(text = stringResource(id = R.string.label_step_info, minutes, seconds, step.tempo), fontSize = 14.sp, color = Color.LightGray)
+                                Text(
+                                    text = stringResource(
+                                        id = R.string.label_step_info,
+                                        minutes,
+                                        seconds,
+                                        step.tempo
+                                    ), fontSize = 14.sp, color = Color.LightGray
+                                )
                             }
                         }
                     }
@@ -1634,27 +1760,41 @@ fun MenuManageScreen(menu: TrainingMenu, onNavigateToRunning: () -> Unit, onNavi
             // 1. 【開始ボタン】 最優先なので一番上に配置。高さを倍（112dp）にして押しやすく
             Button(
                 onClick = onNavigateToRunning,
-                modifier = Modifier.fillMaxWidth().height(112.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(112.dp),
                 enabled = menu.steps.isNotEmpty(),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
-                Text(text = stringResource(id = R.string.btn_start_training_long), fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
+                Text(
+                    text = stringResource(id = R.string.btn_start_training_long),
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color.White
+                )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
             // 2. 【編集・削除ボタン】 管理用なので横並びで配置
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 Button(
                     onClick = onNavigateToEdit,
-                    modifier = Modifier.weight(1f).height(56.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(56.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)
                 ) {
                     Text(text = stringResource(id = R.string.btn_edit), color = Color.White)
                 }
                 Button(
                     onClick = onDeleteMenu,
-                    modifier = Modifier.weight(1f).height(56.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(56.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC62828))
                 ) {
                     Text(text = stringResource(id = R.string.btn_delete), color = Color.White)
@@ -1667,12 +1807,15 @@ fun MenuManageScreen(menu: TrainingMenu, onNavigateToRunning: () -> Unit, onNavi
             Button(
                 onClick = {
                     val jsonText = gson.toJson(menu)
-                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    val clipboard =
+                        context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                     val clip = ClipData.newPlainText("IntervalTimerSingleMenu", jsonText)
                     clipboard.setPrimaryClip(clip)
                     Toast.makeText(context, toastMessage, Toast.LENGTH_SHORT).show()
                 },
-                modifier = Modifier.fillMaxWidth().height(56.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))
             ) {
                 Text(text = stringResource(id = R.string.btn_share_menu), color = Color.White)
@@ -1680,7 +1823,9 @@ fun MenuManageScreen(menu: TrainingMenu, onNavigateToRunning: () -> Unit, onNavi
             Spacer(modifier = Modifier.height(12.dp))
             Button(
                 onClick = onBack,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)
             ) {
                 Text(text = stringResource(id = R.string.btn_back), color = Color.Gray)
@@ -1688,21 +1833,33 @@ fun MenuManageScreen(menu: TrainingMenu, onNavigateToRunning: () -> Unit, onNavi
         }
     }
 }
+
 @Composable
-fun MenuListScreen(menus: SnapshotStateList<TrainingMenu>, onSelectMenu: (Int) -> Unit, onBack: () -> Unit) {
+fun MenuListScreen(
+    menus: SnapshotStateList<TrainingMenu>,
+    onSelectMenu: (Int) -> Unit,
+    onBack: () -> Unit
+) {
     val context = LocalContext.current
     val gson = remember { Gson() }
 
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
-    ){
-        Column(modifier = Modifier
-            .widthIn(max = 480.dp)
-            .fillMaxWidth()
-            .background(DarkBackgroundColor)
-            .padding(12.dp)) {
-            Text(text = stringResource(id = R.string.title_select_menu), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
+    ) {
+        Column(
+            modifier = Modifier
+                .widthIn(max = 480.dp)
+                .fillMaxWidth()
+                .background(DarkBackgroundColor)
+                .padding(12.dp)
+        ) {
+            Text(
+                text = stringResource(id = R.string.title_select_menu),
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = DarkTextColor
+            )
             Spacer(modifier = Modifier.height(12.dp))
 
             val invalidDataMessage = stringResource(R.string.err_invalid_data)
@@ -1712,7 +1869,8 @@ fun MenuListScreen(menus: SnapshotStateList<TrainingMenu>, onSelectMenu: (Int) -
 
             Button(
                 onClick = {
-                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    val clipboard =
+                        context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                     val clipItem = clipboard.primaryClip?.getItemAt(0)
                     val jsonText = clipItem?.text?.toString()
                     if (!jsonText.isNullOrBlank()) {
@@ -1723,7 +1881,8 @@ fun MenuListScreen(menus: SnapshotStateList<TrainingMenu>, onSelectMenu: (Int) -
                                 val finalMessage = successMessageBase.format(importedMenu.name)
                                 Toast.makeText(context, finalMessage, Toast.LENGTH_SHORT).show()
                             } else {
-                                Toast.makeText(context, invalidDataMessage, Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, invalidDataMessage, Toast.LENGTH_SHORT)
+                                    .show()
                             }
                         } catch (_: Exception) {
                             Toast.makeText(context, errorFormatMessage, Toast.LENGTH_SHORT).show()
@@ -1732,18 +1891,21 @@ fun MenuListScreen(menus: SnapshotStateList<TrainingMenu>, onSelectMenu: (Int) -
                         Toast.makeText(context, errClipboardEmptyMessage, Toast.LENGTH_SHORT).show()
                     }
                 },
-                modifier = Modifier.fillMaxWidth().height(56.dp)
-                ,colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF6C00))
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF6C00))
             ) {
                 Text(text = stringResource(id = R.string.btn_import_clipboard), color = Color.White)
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            LazyColumn(modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                ,horizontalAlignment = Alignment.CenterHorizontally) {
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 itemsIndexed(menus) { index, menu ->
                     Card(
                         modifier = Modifier
@@ -1752,12 +1914,26 @@ fun MenuListScreen(menus: SnapshotStateList<TrainingMenu>, onSelectMenu: (Int) -
                             .clickable { onSelectMenu(index) },
                         colors = CardDefaults.cardColors(containerColor = DarkSurfaceColor)
                     ) {
-                        Row(modifier = Modifier
-                            .padding(12.dp)
-                            ,verticalAlignment = Alignment.CenterVertically) {
-                            Text(menu.name, fontSize = 20.sp, modifier = Modifier.weight(1f), color = Color.White)
-                            Text(text = stringResource(R.string.label_steps_count, menu.steps.size), fontSize = 14.sp, color = Color.Gray)
-                            Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color.White)
+                        Row(
+                            modifier = Modifier
+                                .padding(12.dp), verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                menu.name,
+                                fontSize = 20.sp,
+                                modifier = Modifier.weight(1f),
+                                color = Color.White
+                            )
+                            Text(
+                                text = stringResource(R.string.label_steps_count, menu.steps.size),
+                                fontSize = 16.sp,
+                                color = Color.Gray
+                            )
+                            Icon(
+                                Icons.Default.PlayArrow,
+                                contentDescription = null,
+                                tint = Color.White
+                            )
                         }
                     }
                 }
@@ -1765,7 +1941,9 @@ fun MenuListScreen(menus: SnapshotStateList<TrainingMenu>, onSelectMenu: (Int) -
             Spacer(modifier = Modifier.height(12.dp))
             Button(
                 onClick = onBack,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)
             ) {
                 Text(text = stringResource(id = R.string.btn_back), color = Color.White)
@@ -1776,7 +1954,8 @@ fun MenuListScreen(menus: SnapshotStateList<TrainingMenu>, onSelectMenu: (Int) -
 
 fun triggerStepVibration(context: Context, isEnd: Boolean) {
     val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+        val vibratorManager =
+            context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
         vibratorManager.defaultVibrator
     } else {
         @Suppress("DEPRECATION")
