@@ -1027,6 +1027,7 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
         }
     }
 
+//ここから表示
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     if (isLandscape) {
         Row(
@@ -1046,6 +1047,116 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
             }
         }
     } else {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(DarkBackgroundColor)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    ProgressBar(totalRemainingSeconds, totalMenuSeconds)
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                RemainingTime(totalRemainingSeconds, totalMenuSeconds)
+
+                val step: TimerStep = steps.getOrNull(currentStepIndex) ?: return
+                var isPulse by remember { mutableStateOf(false) }
+                val tempoInterval = remember(step.tempo) { if (step.tempo > 0) (60000 / step.tempo).toLong() else 0L }
+                val currentRemainingTime by rememberUpdatedState(remainingTime)
+                if (isRunning && tempoInterval > 0L) {
+                    LaunchedEffect(step.tempo, true) {
+                        val toneG = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
+                        try {
+                            var nextTick = System.currentTimeMillis()
+                            while (isActive) {
+                                if (!isRunning || currentRemainingTime <= 3) {
+                                    delay(100L.milliseconds)
+                                    nextTick = System.currentTimeMillis()
+                                    continue
+                                }
+                                nextTick += tempoInterval
+                                isPulse = true
+                                toneG.startTone(ToneGenerator.TONE_PROP_BEEP, 40)
+                                delay(60L.milliseconds)
+                                isPulse = false
+                                val wait = nextTick - System.currentTimeMillis()
+                                if (wait > 0) {
+                                    delay(wait.milliseconds)
+                                }
+                            }
+                        } finally {
+                            toneG.release()
+                        }
+                    }
+                }
+                val baseColor = step.color
+                val animatedColor by animateColorAsState(
+                    targetValue = if (isPulse) baseColor.copy(alpha = 1.0f) else baseColor.copy(alpha = 0.4f),
+                    animationSpec = tween(durationMillis = 50, easing = LinearEasing),
+                    label = "Pulse"
+                )
+                val contentColor = if (baseColor.luminance() > 0.5f) Color.Black else Color.White
+                Card(
+                    modifier = Modifier,
+                    colors = CardDefaults.cardColors(containerColor = animatedColor),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(vertical = 12.dp, horizontal = 8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(step.name, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = contentColor)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text("${step.tempo} RPM", fontSize = 42.sp, fontWeight = FontWeight.Black, color = contentColor)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        val minutes = step.durationSeconds / 60
+                        val seconds = step.durationSeconds % 60
+                        val remainingTimeMinutes = remainingTime / 60
+                        val remainingTimeSeconds = remainingTime % 60
+                        var dynamicFontSize by remember { mutableStateOf(42.sp) }
+                        Text(text = String.format(Locale.US, "%02d:%02d / %02d:%02d", remainingTimeMinutes, remainingTimeSeconds, minutes, seconds),
+                            fontSize = dynamicFontSize,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = contentColor,
+                            maxLines = 1,
+                            softWrap = false,
+                            onTextLayout = { result ->
+                                if (result.didOverflowWidth && dynamicFontSize > 24.sp) {
+                                    dynamicFontSize *= 0.9f
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+        }
+        /*
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Spacer(modifier = Modifier.size(64.dp))
+            Spacer(modifier = Modifier.width(12.dp))
+
+            val containerColor = if (isRunning) DarkSurfaceColor else Color(0xFFE57373)
+            val icon = if (isRunning) Icons.Default.Pause else Icons.Default.PlayArrow
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Button(onClick = { isRunning = !isRunning }, modifier = Modifier.size(80.dp), shape = CircleShape, colors = ButtonDefaults.buttonColors(containerColor = containerColor), contentPadding = PaddingValues(0.dp)) {
+                    Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(40.dp), tint = Color.White)
+                }
+            }
+        }
+
+         */
+
+
+        /*
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -1083,11 +1194,84 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                             Text(text = stringResource(id = R.string.label_preparing), fontSize = 24.sp, color = Color.Gray)
                             Text("$startDelay", fontSize = 120.sp, fontWeight = FontWeight.Black, color = if (isRunning) Color.Red else Color.Gray)
                         }
+
                     } else {
-                        MainStepContent(steps.getOrNull(currentStepIndex), remainingTime, isRunning)
+//                      MainStepContent(steps.getOrNull(currentStepIndex), remainingTime, isRunning)
+//                        fun MainStepContent(step: TimerStep?, remainingTime: Int, isRunning: Boolean) {
+                        val step: TimerStep = steps.getOrNull(currentStepIndex) ?: return
+                        var isPulse by remember { mutableStateOf(false) }
+                        val tempoInterval = remember(step.tempo) { if (step.tempo > 0) (60000 / step.tempo).toLong() else 0L }
+                        val currentRemainingTime by rememberUpdatedState(remainingTime)
+                        if (isRunning && tempoInterval > 0L) {
+                            LaunchedEffect(step.tempo, true) {
+                                val toneG = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
+                                try {
+                                    var nextTick = System.currentTimeMillis()
+                                    while (isActive) {
+                                        if (!isRunning || currentRemainingTime <= 3) {
+                                            delay(100L.milliseconds)
+                                            nextTick = System.currentTimeMillis()
+                                            continue
+                                        }
+                                        nextTick += tempoInterval
+                                        isPulse = true
+                                        toneG.startTone(ToneGenerator.TONE_PROP_BEEP, 40)
+
+                                        delay(60L.milliseconds)
+                                        isPulse = false
+                                        val wait = nextTick - System.currentTimeMillis()
+                                        if (wait > 0) {
+                                            delay(wait.milliseconds)
+                                        }
+                                    }
+                                } finally {
+                                    toneG.release()
+                                }
+                            }
+                        }
+
+                        val baseColor = step.color
+                        val animatedColor by animateColorAsState(
+                            targetValue = if (isPulse) baseColor.copy(alpha = 1.0f) else baseColor.copy(alpha = 0.4f),
+                            animationSpec = tween(durationMillis = 50, easing = LinearEasing),
+                            label = "Pulse"
+                        )
+                        val contentColor = if (baseColor.luminance() > 0.5f) Color.Black else Color.White
+                        Card(
+                            modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp),
+                            colors = CardDefaults.cardColors(containerColor = animatedColor),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxSize().padding(vertical = 12.dp, horizontal = 8.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Text(step.name, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = contentColor)
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text("${step.tempo} RPM", fontSize = 42.sp, fontWeight = FontWeight.Black, color = contentColor)
+                                Spacer(modifier = Modifier.height(12.dp))
+                                val minutes = step.durationSeconds / 60
+                                val seconds = step.durationSeconds % 60
+                                val remainingTimeMinutes = remainingTime / 60
+                                val remainingTimeSeconds = remainingTime % 60
+                                var dynamicFontSize by remember { mutableStateOf(42.sp) }
+                                Text(text = String.format(Locale.US, "%02d:%02d / %02d:%02d", remainingTimeMinutes, remainingTimeSeconds, minutes, seconds),
+                                    fontSize = dynamicFontSize,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = contentColor,
+                                    maxLines = 1,
+                                    softWrap = false,
+                                    onTextLayout = { result ->
+                                        if (result.didOverflowWidth && dynamicFontSize > 24.sp) {
+                                            dynamicFontSize *= 0.9f
+                                        }
+                                    }
+                                )
+                            }
+                        }
                     }
                 }
-
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,
@@ -1103,7 +1287,6 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                             Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(40.dp), tint = Color.White)
                         }
                     }
-
 
                     Spacer(modifier = Modifier.width(12.dp))
                     if (!isStarting) {
@@ -1141,6 +1324,7 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                 }
             }
         }
+         */
     }
 }
 
@@ -1190,7 +1374,7 @@ fun RemainingTime(remaining: Int, total: Int) {
     }
 }
 
-
+/*
 @SuppressLint("DefaultLocale")
 @Composable
 fun MainStepContent(step: TimerStep?, remainingTime: Int, isRunning: Boolean) {
@@ -1270,6 +1454,7 @@ fun MainStepContent(step: TimerStep?, remainingTime: Int, isRunning: Boolean) {
         }
     }
 }
+*/
 
 
 /*
