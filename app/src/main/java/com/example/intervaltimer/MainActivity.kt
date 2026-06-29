@@ -76,9 +76,9 @@ object Dimens {
     val XXLarge = 48.dp
     val XXXLarge = 60.dp
     val reel150 = 150.dp
-    val widthmax = 480.dp
-    val PlayCIrcle = 80.dp
-    val SkipCIrcle = 64.dp
+    val WidthMax = 480.dp
+    val PlayCircle = 80.dp
+    val SkipCircle = 64.dp
     val Icon = 40.dp
     val StartTraining = 120.dp
     val ColorSelected = 44.dp
@@ -256,7 +256,7 @@ fun TopScreen(
         if (isLandscape) {
             Column(
                 modifier = Modifier
-                    .widthIn(max = Dimens.widthmax)
+                    .widthIn(max = Dimens.WidthMax)
                     .fillMaxWidth()
                     .background(DarkBackgroundColor)
                     .padding(Dimens.Medium)
@@ -277,7 +277,7 @@ fun TopScreen(
         } else {
             Column(
                 modifier = Modifier
-                    .widthIn(max = Dimens.widthmax)
+                    .widthIn(max = Dimens.WidthMax)
                     .fillMaxWidth()
                     .background(DarkBackgroundColor)
                     .padding(Dimens.Medium)
@@ -1381,7 +1381,7 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                     ) {
                         Button(
                             onClick = { isRunning = !isRunning },
-                            modifier = Modifier.size(Dimens.PlayCIrcle),
+                            modifier = Modifier.size(Dimens.PlayCircle),
                             shape = CircleShape,
                             colors = ButtonDefaults.buttonColors(containerColor = playButtonColor),
                             contentPadding = PaddingValues(Dimens.Zero)
@@ -1401,7 +1401,7 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                         Button(
                             onClick = { navigateToNextStep() },
                             modifier = Modifier
-                                .size(Dimens.SkipCIrcle)
+                                .size(Dimens.SkipCircle)
                                 .offset(x = (-16).dp),
                             shape = CircleShape,
                             colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor),
@@ -1462,7 +1462,7 @@ fun FinishedScreen(onDone: () -> Unit) {
             Icon(
                 Icons.Default.CheckCircle,
                 contentDescription = null,
-                modifier = Modifier.size(Dimens.PlayCIrcle),
+                modifier = Modifier.size(Dimens.PlayCircle),
                 tint = Color(0xFF81C784)
             )
             Spacer(modifier = Modifier.height(Dimens.XXLarge))
@@ -1870,7 +1870,7 @@ fun MenuListScreen(
     ) {
         Column(
             modifier = Modifier
-                .widthIn(max = Dimens.widthmax)
+                .widthIn(max = Dimens.WidthMax)
                 .fillMaxWidth()
                 .background(DarkBackgroundColor)
                 .padding(Dimens.Medium)
