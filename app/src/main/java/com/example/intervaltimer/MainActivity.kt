@@ -66,6 +66,27 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlin.time.Duration.Companion.milliseconds
 
+object Dimens {
+    val Zero = 0.dp
+    val Tiny = 4.dp
+    val Small = 8.dp
+    val Medium = 12.dp
+    val Large = 24.dp
+    val XLarge = 36.dp
+    val XXLarge = 48.dp
+    val XXXLarge = 60.dp
+    val reel150 = 150.dp
+    val widthmax = 480.dp
+    val PlayCIrcle = 80.dp
+    val SkipCIrcle = 64.dp
+    val Icon = 40.dp
+    val StartTraining = 120.dp
+    val ColorSelected = 44.dp
+    val ColorNotSelected = 38.dp
+    val ColorCheck = 38.dp
+    val ColorBorder = 3.dp
+}
+
 data class TimerStep(
     val name: String,
     val durationSeconds: Int,
@@ -235,10 +256,10 @@ fun TopScreen(
         if (isLandscape) {
             Column(
                 modifier = Modifier
-                    .widthIn(max = 480.dp)
+                    .widthIn(max = Dimens.widthmax)
                     .fillMaxWidth()
                     .background(DarkBackgroundColor)
-                    .padding(12.dp)
+                    .padding(Dimens.Medium)
             ) {
                 Text(
                     text = stringResource(id = R.string.title_interval_timer),
@@ -246,20 +267,20 @@ fun TopScreen(
                     fontWeight = FontWeight.Bold,
                     color = DarkTextColor
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(Dimens.Medium))
                 TopScreenButton(textRes = R.string.btn_create_menu, onNavigateToAdd)
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(Dimens.Medium))
                 TopScreenButton(textRes = R.string.btn_start_training, onNavigateToRunning)
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(Dimens.Medium))
                 TopScreenButton(textRes = R.string.btn_edit_presets, onNavigateToEdit)
             }
         } else {
             Column(
                 modifier = Modifier
-                    .widthIn(max = 480.dp)
+                    .widthIn(max = Dimens.widthmax)
                     .fillMaxWidth()
                     .background(DarkBackgroundColor)
-                    .padding(12.dp)
+                    .padding(Dimens.Medium)
             ) {
                 Text(
                     text = stringResource(id = R.string.title_interval_timer),
@@ -267,11 +288,11 @@ fun TopScreen(
                     fontWeight = FontWeight.Bold,
                     color = DarkTextColor
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(Dimens.Medium))
                 TopScreenButton(textRes = R.string.btn_create_menu, onNavigateToAdd)
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(Dimens.Medium))
                 TopScreenButton(textRes = R.string.btn_start_training, onNavigateToRunning)
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(Dimens.Medium))
                 TopScreenButton(textRes = R.string.btn_edit_presets, onNavigateToEdit)
             }
         }
@@ -285,7 +306,7 @@ fun TopScreenButton(textRes: Int, onClick: () -> Unit) {
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(64.dp),
+            .height(Dimens.XXXLarge),
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = Color.White
@@ -342,14 +363,14 @@ fun TimerScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(DarkBackgroundColor)
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = Dimens.Large),
             verticalAlignment = Alignment.Bottom
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth(0.5f)
                     .background(DarkBackgroundColor)
-                    .padding(horizontal = 12.dp),
+                    .padding(horizontal = Dimens.Medium),
             ) {
                 Text(
                     text = stringResource(id = if (editMenuIndex == -1) R.string.title_create_menu else R.string.title_edit_menu),
@@ -357,7 +378,7 @@ fun TimerScreen(
                     fontWeight = FontWeight.Bold,
                     color = DarkTextColor
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(Dimens.Medium))
                 //ステップ名
                 Box(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
@@ -398,7 +419,7 @@ fun TimerScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(Dimens.Medium))
                 //カラーラベル
                 Text(
                     text = stringResource(id = R.string.label_color),
@@ -408,18 +429,18 @@ fun TimerScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        .padding(vertical = Dimens.Tiny),
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.Medium)
                 ) {
                     colorOptions.forEachIndexed { index, color ->
                         val isSelected = (selectedIndex == index) // インデックスで比較
 
                         Box(
                             modifier = Modifier
-                                .size(if (isSelected) 44.dp else 38.dp)
+                                .size(if (isSelected) Dimens.ColorSelected else Dimens.ColorNotSelected)
                                 .background(color, shape = CircleShape)
                                 .border(
-                                    width = if (isSelected) 3.dp else 0.dp,
+                                    width = if (isSelected) Dimens.ColorBorder else Dimens.Zero,
                                     color = if (isSelected) Color.White else Color.Transparent,
                                     shape = CircleShape
                                 )
@@ -431,7 +452,7 @@ fun TimerScreen(
                                     imageVector = Icons.Default.Check,
                                     contentDescription = null,
                                     tint = if (color.luminance() > 0.5f) Color.Black else Color.White,
-                                    modifier = Modifier.size(20.dp)
+                                    modifier = Modifier.size(Dimens.ColorCheck)
                                 )
                             }
                         }
@@ -440,13 +461,13 @@ fun TimerScreen(
                 //時間とRPMは横並び
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.Small)
                 ) {
                     OutlinedButton(
                         onClick = { showTimePicker = true },
                         modifier = Modifier
                             .weight(1f)
-                            .height(56.dp),
+                            .height(Dimens.XXXLarge),
                         shape = OutlinedTextFieldDefaults.shape
                     ) {
                         Text(text = "${inputMinutes}分 ${inputSeconds}秒", color = Color.White)
@@ -455,7 +476,7 @@ fun TimerScreen(
                         onClick = { showTempoPicker = true },
                         modifier = Modifier
                             .weight(1f)
-                            .height(56.dp),
+                            .height(Dimens.XXXLarge),
                         shape = OutlinedTextFieldDefaults.shape
                     ) {
                         Text(text = "$inputTempo RPM", color = Color.White)
@@ -491,7 +512,7 @@ fun TimerScreen(
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(Dimens.Medium))
 //ステップ追加ボタン
                 Button(
                     onClick = {
@@ -511,42 +532,42 @@ fun TimerScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp)
+                        .height(Dimens.XXXLarge)
                 ) {
                     Text(text = stringResource(id = R.string.btn_add_step))
                 }
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(Dimens.Medium))
             }
 
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(DarkBackgroundColor)
-                    .padding(horizontal = 12.dp),
+                    .padding(horizontal = Dimens.Medium),
             ) {
                 LazyColumn(
                     modifier = Modifier
                         .weight(1f)
                         .background(DarkBackgroundColor)
-                        .padding(horizontal = 12.dp),
+                        .padding(horizontal = Dimens.Medium),
                 ) {
                     itemsIndexed(tempSteps) { index, step ->
                         Card(
                             modifier = Modifier
-                                .padding(vertical = 4.dp)
+                                .padding(vertical = Dimens.Tiny)
                                 .fillMaxWidth(),
                             colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))
                         ) {
                             Row(
                                 modifier = Modifier
-                                    .padding(8.dp), verticalAlignment = Alignment.CenterVertically
+                                    .padding(Dimens.Small), verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .size(12.dp)
+                                        .size(Dimens.Medium)
                                         .background(step.color, shape = CircleShape)
                                 )
-                                Spacer(modifier = Modifier.width(12.dp))
+                                Spacer(modifier = Modifier.width(Dimens.Medium))
                                 Column(modifier = Modifier.weight(1f)) {
                                     val minutes = step.durationSeconds / 60
                                     val seconds = step.durationSeconds % 60
@@ -574,7 +595,7 @@ fun TimerScreen(
                                         Text("▲", color = Color.LightGray, fontSize = 14.sp)
                                     }
                                 } else {
-                                    Spacer(modifier = Modifier.size(48.dp))
+                                    Spacer(modifier = Modifier.size(Dimens.XXLarge))
                                 }
 
                                 if (index < tempSteps.lastIndex) {
@@ -585,7 +606,7 @@ fun TimerScreen(
                                         Text("▼", color = Color.LightGray, fontSize = 14.sp)
                                     }
                                 } else {
-                                    Spacer(modifier = Modifier.size(48.dp))
+                                    Spacer(modifier = Modifier.size(Dimens.XXLarge))
                                 }
 
                                 IconButton(onClick = { tempSteps.remove(step) }) {
@@ -610,7 +631,7 @@ fun TimerScreen(
                         unfocusedTextColor = Color.White
                     )
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(Dimens.Medium))
 //保存ボタン
                 Button(
                     onClick = {
@@ -624,11 +645,11 @@ fun TimerScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp)
+                        .height(Dimens.XXXLarge)
                 ) {
                     Text(text = stringResource(id = if (editMenuIndex == -1) R.string.btn_save_menu else R.string.btn_overwrite_menu))
                 }
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(Dimens.Medium))
             }
         }
     } else {
@@ -636,7 +657,7 @@ fun TimerScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(DarkBackgroundColor)
-                .padding(12.dp)
+                .padding(Dimens.Medium)
         ) {
             Text(
                 text = stringResource(id = if (editMenuIndex == -1) R.string.title_create_menu else R.string.title_edit_menu),
@@ -644,7 +665,7 @@ fun TimerScreen(
                 fontWeight = FontWeight.Bold,
                 color = DarkTextColor
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(Dimens.Medium))
 
             //ステップ名
             Box(modifier = Modifier.fillMaxWidth()) {
@@ -686,7 +707,7 @@ fun TimerScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(Dimens.Medium))
 
             //カラーラベル
             Text(
@@ -697,18 +718,18 @@ fun TimerScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    .padding(vertical = Dimens.Tiny),
+                horizontalArrangement = Arrangement.spacedBy(Dimens.Medium)
             ) {
                 colorOptions.forEachIndexed { index, color ->
                     val isSelected = (selectedIndex == index) // インデックスで比較
 
                     Box(
                         modifier = Modifier
-                            .size(if (isSelected) 44.dp else 38.dp)
+                            .size(if (isSelected) Dimens.ColorSelected else Dimens.ColorNotSelected)
                             .background(color, shape = CircleShape)
                             .border(
-                                width = if (isSelected) 3.dp else 0.dp,
+                                width = if (isSelected) Dimens.ColorNotSelected else Dimens.Zero,
                                 color = if (isSelected) Color.White else Color.Transparent,
                                 shape = CircleShape
                             )
@@ -720,7 +741,7 @@ fun TimerScreen(
                                 imageVector = Icons.Default.Check,
                                 contentDescription = null,
                                 tint = if (color.luminance() > 0.5f) Color.Black else Color.White,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(Dimens.ColorCheck)
                             )
                         }
                     }
@@ -730,13 +751,13 @@ fun TimerScreen(
 //時間とRPMは横並び
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(Dimens.Small)
             ) {
                 OutlinedButton(
                     onClick = { showTimePicker = true },
                     modifier = Modifier
                         .weight(1f)
-                        .height(56.dp),
+                        .height(Dimens.XXXLarge),
                     shape = OutlinedTextFieldDefaults.shape
                 ) {
                     Text(text = "${inputMinutes}分 ${inputSeconds}秒", color = Color.White)
@@ -745,7 +766,7 @@ fun TimerScreen(
                     onClick = { showTempoPicker = true },
                     modifier = Modifier
                         .weight(1f)
-                        .height(56.dp),
+                        .height(Dimens.XXXLarge),
                     shape = OutlinedTextFieldDefaults.shape
                 ) {
                     Text(text = "$inputTempo RPM", color = Color.White)
@@ -799,33 +820,33 @@ fun TimerScreen(
                     }
                 },
                 modifier = Modifier
-                    .padding(top = 8.dp)
+                    .padding(top = Dimens.Small)
                     .fillMaxWidth()
-                    .height(56.dp)
+                    .height(Dimens.XXXLarge)
             ) {
                 Text(text = stringResource(id = R.string.btn_add_step))
             }
 
             LazyColumn(modifier = Modifier
                 .weight(1f)
-                .padding(vertical = 8.dp)) {
+                .padding(vertical = Dimens.Small)) {
                 itemsIndexed(tempSteps) { index, step ->
                     Card(
                         modifier = Modifier
-                            .padding(vertical = 4.dp)
+                            .padding(vertical = Dimens.Tiny)
                             .fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))
                     ) {
                         Row(
-                            modifier = Modifier.padding(8.dp),
+                            modifier = Modifier.padding(Dimens.Small),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(12.dp)
+                                    .size(Dimens.Medium)
                                     .background(step.color, shape = CircleShape)
                             )
-                            Spacer(modifier = Modifier.width(12.dp))
+                            Spacer(modifier = Modifier.width(Dimens.Medium))
                             Column(modifier = Modifier.weight(1f)) {
                                 val minutes = step.durationSeconds / 60
                                 val seconds = step.durationSeconds % 60
@@ -849,7 +870,7 @@ fun TimerScreen(
                                     Text("▲", color = Color.LightGray, fontSize = 14.sp)
                                 }
                             } else {
-                                Spacer(modifier = Modifier.size(48.dp))
+                                Spacer(modifier = Modifier.size(Dimens.XXLarge))
                             }
 
                             if (index < tempSteps.lastIndex) {
@@ -860,7 +881,7 @@ fun TimerScreen(
                                     Text("▼", color = Color.LightGray, fontSize = 14.sp)
                                 }
                             } else {
-                                Spacer(modifier = Modifier.size(48.dp))
+                                Spacer(modifier = Modifier.size(Dimens.XXLarge))
                             }
 
                             IconButton(onClick = { tempSteps.remove(step) }) {
@@ -885,7 +906,7 @@ fun TimerScreen(
                     unfocusedTextColor = Color.White
                 )
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(Dimens.Medium))
 //保存ボタン
             Button(
                 onClick = {
@@ -899,7 +920,7 @@ fun TimerScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
+                    .height(Dimens.XXXLarge)
             ) {
                 Text(text = stringResource(id = if (editMenuIndex == -1) R.string.btn_save_menu else R.string.btn_overwrite_menu))
             }
@@ -919,7 +940,7 @@ fun TimeDrumPicker(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(150.dp),
+            .height(Dimens.reel150),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically // 【重要】これで縦位置が揃います
     ) {
@@ -929,19 +950,19 @@ fun TimeDrumPicker(
                 minutes = it
                 onTimeSelected(minutes, seconds)
             }
-            Text("分", color = Color.White, modifier = Modifier.padding(start = 4.dp))
+            Text("分", color = Color.White, modifier = Modifier.padding(start = Dimens.Tiny))
         }
 
         // 秒エリア（ドラム＋文字）
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(start = 12.dp)
+            modifier = Modifier.padding(start = Dimens.Medium)
         ) {
             DigitWheel(0..59, seconds) {
                 seconds = it
                 onTimeSelected(minutes, seconds)
             }
-            Text("秒", color = Color.White, modifier = Modifier.padding(start = 4.dp))
+            Text("秒", color = Color.White, modifier = Modifier.padding(start = Dimens.Tiny))
         }
     }
 }
@@ -966,7 +987,7 @@ fun RpmDrumPicker(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(150.dp),
+            .height(Dimens.reel150),
         horizontalArrangement = Arrangement.Center
     ) {
         // 百の位 (0-2)
@@ -999,9 +1020,9 @@ fun DigitWheel(
     LazyColumn(
         state = listState, // 3. state を紐付け
         flingBehavior = flingBehavior, // 4. ここに追加
-        modifier = modifier.height(150.dp),
+        modifier = modifier.height(Dimens.reel150),
         horizontalAlignment = Alignment.CenterHorizontally,
-        contentPadding = PaddingValues(vertical = 50.dp) // 中央に合わせるパディング
+        contentPadding = PaddingValues(vertical = Dimens.XXLarge) // 中央に合わせるパディング
     ) {
         items(range.toList()) { digit ->
             val isSelected = (digit == value)
@@ -1010,7 +1031,7 @@ fun DigitWheel(
                 fontSize = if (isSelected) 32.sp else 20.sp,
                 color = if (isSelected) Color.White else Color.Gray,
                 modifier = Modifier
-                    .padding(8.dp)
+                    .padding(Dimens.Small)
                     .clickable { onValueChange(digit) }
             )
         }
@@ -1023,14 +1044,14 @@ fun PresetEditScreen(presetNames: SnapshotStateList<String>) {
     Column(modifier = Modifier
         .fillMaxSize()
         .background(DarkBackgroundColor)
-        .padding(12.dp)) {
+        .padding(Dimens.Medium)) {
         Text(
             text = stringResource(id = R.string.title_preset_edit),
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             color = DarkTextColor
         )
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(Dimens.Medium))
         Row(verticalAlignment = Alignment.CenterVertically) {
             OutlinedTextField(
                 value = newPreset,
@@ -1042,26 +1063,26 @@ fun PresetEditScreen(presetNames: SnapshotStateList<String>) {
                     unfocusedTextColor = Color.White
                 )
             )
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(Dimens.Medium))
             Button(
                 onClick = {
                     if (newPreset.isNotBlank()) {
                         presetNames.add(newPreset); newPreset = ""
                     }
                 },
-                modifier = Modifier.height(56.dp)
+                modifier = Modifier.height(Dimens.XXXLarge)
             ) {
                 Text(text = stringResource(id = R.string.btn_add))
             }
         }
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(Dimens.Medium))
         LazyColumn(modifier = Modifier.weight(1f)) {
             items(presetNames) { name ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp)
+                        .padding(vertical = Dimens.Tiny)
                 ) {
                     Text(
                         name,
@@ -1217,14 +1238,14 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
             modifier = Modifier
                 .fillMaxSize()
                 .background(DarkBackgroundColor)
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = Dimens.Large),
             verticalAlignment = Alignment.Bottom
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth(0.5f)
                     .background(DarkBackgroundColor)
-                    .padding(horizontal = 12.dp),
+                    .padding(horizontal = Dimens.Medium),
             ) {
 
             }
@@ -1241,9 +1262,9 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 ProgressBar(totalRemainingSeconds, totalMenuSeconds)
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(Dimens.Medium))
                 RemainingTime(totalRemainingSeconds, totalMenuSeconds)
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(Dimens.Medium))
 
                 val step: TimerStep = steps.getOrNull(currentStepIndex) ?: return
                 var isPulse by remember { mutableStateOf(false) }
@@ -1288,12 +1309,12 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                 Card(
                     modifier = Modifier,
                     colors = CardDefaults.cardColors(containerColor = animatedColor),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                    elevation = CardDefaults.cardElevation(defaultElevation = Dimens.Small)
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 12.dp, horizontal = 8.dp),
+                            .padding(vertical = Dimens.Medium, horizontal = Dimens.Small),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
@@ -1303,14 +1324,14 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                             fontWeight = FontWeight.Bold,
                             color = contentColor
                         )
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(Dimens.Medium))
                         Text(
                             "${step.tempo} RPM",
                             fontSize = 42.sp,
                             fontWeight = FontWeight.Black,
                             color = contentColor
                         )
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(Dimens.Medium))
                         val minutes = step.durationSeconds / 60
                         val seconds = step.durationSeconds % 60
                         val remainingTimeMinutes = remainingTime / 60
@@ -1337,8 +1358,8 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                             }
                         )
                     }
-//            Spacer(modifier = Modifier.size(64.dp))
-//            Spacer(modifier = Modifier.width(12.dp))
+//            Spacer(modifier = Modifier.size(Dimens.XXXLarge))
+//            Spacer(modifier = Modifier.width(Dimens.Medium))
 
                 }
                 Row(
@@ -1360,15 +1381,15 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                     ) {
                         Button(
                             onClick = { isRunning = !isRunning },
-                            modifier = Modifier.size(80.dp),
+                            modifier = Modifier.size(Dimens.PlayCIrcle),
                             shape = CircleShape,
                             colors = ButtonDefaults.buttonColors(containerColor = playButtonColor),
-                            contentPadding = PaddingValues(0.dp)
+                            contentPadding = PaddingValues(Dimens.Zero)
                         ) {
                             Icon(
                                 imageVector = iconPlay,
                                 contentDescription = null,
-                                modifier = Modifier.size(40.dp),
+                                modifier = Modifier.size(Dimens.Icon),
                                 tint = Color.White
                             )
                         }
@@ -1380,16 +1401,16 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                         Button(
                             onClick = { navigateToNextStep() },
                             modifier = Modifier
-                                .size(64.dp)
+                                .size(Dimens.SkipCIrcle)
                                 .offset(x = (-16).dp),
                             shape = CircleShape,
                             colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor),
-                            contentPadding = PaddingValues(0.dp)
+                            contentPadding = PaddingValues(Dimens.Zero)
                         ) {
                             Icon(
                                 imageVector = iconNext,
                                 contentDescription = null,
-                                modifier = Modifier.size(40.dp),
+                                modifier = Modifier.size(Dimens.Icon),
                                 tint = Color.White
                             )
                         }
@@ -1437,19 +1458,19 @@ fun FinishedScreen(onDone: () -> Unit) {
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(Dimens.Medium))
             Icon(
                 Icons.Default.CheckCircle,
                 contentDescription = null,
-                modifier = Modifier.size(100.dp),
+                modifier = Modifier.size(Dimens.PlayCIrcle),
                 tint = Color(0xFF81C784)
             )
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(Dimens.XXLarge))
             Button(
                 onClick = onDone,
                 modifier = Modifier
                     .fillMaxWidth(0.6f)
-                    .height(56.dp),
+                    .height(Dimens.XXXLarge),
                 colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)
             ) {
                 Text(
@@ -1476,7 +1497,7 @@ fun ProgressBar(remaining: Int, total: Int) {
         progress = { progress },
         modifier = Modifier
             .fillMaxWidth()
-            .height(10.dp)
+            .height(Dimens.Medium)
             .clip(CircleShape),
         color = Color.Cyan,
         trackColor = DarkSurfaceColor
@@ -1503,7 +1524,7 @@ fun RemainingTime(remaining: Int, total: Int) {
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium,
             color = Color.Gray,
-            modifier = Modifier.padding(bottom = 4.dp, start = 4.dp)
+            modifier = Modifier.padding(bottom = Dimens.Tiny, start = Dimens.Tiny)
         )
     }
 }
@@ -1513,11 +1534,11 @@ fun NextStepRow(step: TimerStep, label: String) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = Dimens.Tiny),
         colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
+            modifier = Modifier.padding(horizontal = Dimens.Medium, vertical = Dimens.Medium),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -1563,14 +1584,14 @@ fun MenuManageScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(DarkBackgroundColor)
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = Dimens.Large),
             verticalAlignment = Alignment.Bottom
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth(0.5f)
                     .background(DarkBackgroundColor)
-                    .padding(horizontal = 12.dp)
+                    .padding(horizontal = Dimens.Medium)
             ) {
                 Text(
                     menu.name,
@@ -1578,7 +1599,7 @@ fun MenuManageScreen(
                     fontWeight = FontWeight.Bold,
                     color = DarkTextColor
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(Dimens.Medium))
                 if (menu.steps.isEmpty()) {
                     Text(text = stringResource(id = R.string.msg_no_steps), color = Color.Gray)
                 } else {
@@ -1586,7 +1607,7 @@ fun MenuManageScreen(
                         items(menu.steps) { step ->
                             Card(
                                 modifier = Modifier
-                                    .padding(vertical = 4.dp)
+                                    .padding(vertical = Dimens.Tiny)
                                     .fillMaxWidth(),
                                 colors = CardDefaults.cardColors(
                                     containerColor = step.color.copy(
@@ -1595,15 +1616,15 @@ fun MenuManageScreen(
                                 )
                             ) {
                                 Row(
-                                    modifier = Modifier.padding(12.dp),
+                                    modifier = Modifier.padding(Dimens.Medium),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Box(
                                         modifier = Modifier
-                                            .size(12.dp)
+                                            .size(Dimens.Medium)
                                             .background(step.color, shape = CircleShape)
                                     )
-                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Spacer(modifier = Modifier.width(Dimens.Medium))
                                     Text(
                                         step.name,
                                         modifier = Modifier.weight(1f),
@@ -1631,13 +1652,13 @@ fun MenuManageScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(DarkBackgroundColor)
-                    .padding(horizontal = 12.dp)
+                    .padding(horizontal = Dimens.Medium)
             ) {
                 Button(
                     onClick = onNavigateToRunning,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(112.dp),
+                        .height(Dimens.StartTraining),
                     enabled = menu.steps.isNotEmpty(),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
@@ -1648,17 +1669,17 @@ fun MenuManageScreen(
                         color = Color.White
                     )
                 }
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(Dimens.Medium))
 // 2. 【編集・削除ボタン】 管理用なので横並びで配置
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.Small)
                 ) {
                     Button(
                         onClick = onNavigateToEdit,
                         modifier = Modifier
                             .weight(1f)
-                            .height(56.dp),
+                            .height(Dimens.XXXLarge),
                         colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)
                     ) {
                         Text(text = stringResource(id = R.string.btn_edit), color = Color.White)
@@ -1667,13 +1688,13 @@ fun MenuManageScreen(
                         onClick = onDeleteMenu,
                         modifier = Modifier
                             .weight(1f)
-                            .height(56.dp),
+                            .height(Dimens.XXXLarge),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC62828))
                     ) {
                         Text(text = stringResource(id = R.string.btn_delete), color = Color.White)
                     }
                 }
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(Dimens.Medium))
 // 3. 【シェアボタン】 優先度を下げて下に配置（サイズは標準）
                 Button(
                     onClick = {
@@ -1686,17 +1707,17 @@ fun MenuManageScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
+                        .height(Dimens.XXXLarge),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))
                 ) {
                     Text(text = stringResource(id = R.string.btn_share_menu), color = Color.White)
                 }
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(Dimens.Medium))
                 Button(
                     onClick = onBack,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
+                        .height(Dimens.XXXLarge),
                     colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)
                 ) {
                     Text(text = stringResource(id = R.string.btn_back), color = Color.Gray)
@@ -1707,9 +1728,9 @@ fun MenuManageScreen(
         Column(modifier = Modifier
             .fillMaxSize()
             .background(DarkBackgroundColor)
-            .padding(12.dp)) {
+            .padding(Dimens.Medium)) {
             Text(menu.name, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(Dimens.Medium))
 
             // ステップ一覧（ここは変更なし）
             if (menu.steps.isEmpty()) {
@@ -1719,20 +1740,20 @@ fun MenuManageScreen(
                     items(menu.steps) { step ->
                         Card(
                             modifier = Modifier
-                                .padding(vertical = 4.dp)
+                                .padding(vertical = Dimens.Tiny)
                                 .fillMaxWidth(),
                             colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))
                         ) {
                             Row(
-                                modifier = Modifier.padding(12.dp),
+                                modifier = Modifier.padding(Dimens.Medium),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .size(12.dp)
+                                        .size(Dimens.Medium)
                                         .background(step.color, shape = CircleShape)
                                 )
-                                Spacer(modifier = Modifier.width(12.dp))
+                                Spacer(modifier = Modifier.width(Dimens.Medium))
                                 Text(
                                     step.name,
                                     modifier = Modifier.weight(1f),
@@ -1755,14 +1776,14 @@ fun MenuManageScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(Dimens.Large))
 
             // 1. 【開始ボタン】 最優先なので一番上に配置。高さを倍（112dp）にして押しやすく
             Button(
                 onClick = onNavigateToRunning,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(112.dp),
+                    .height(Dimens.StartTraining),
                 enabled = menu.steps.isNotEmpty(),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
@@ -1774,18 +1795,18 @@ fun MenuManageScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(Dimens.Medium))
 
             // 2. 【編集・削除ボタン】 管理用なので横並びで配置
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(Dimens.Small)
             ) {
                 Button(
                     onClick = onNavigateToEdit,
                     modifier = Modifier
                         .weight(1f)
-                        .height(56.dp),
+                        .height(Dimens.XXXLarge),
                     colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)
                 ) {
                     Text(text = stringResource(id = R.string.btn_edit), color = Color.White)
@@ -1794,14 +1815,14 @@ fun MenuManageScreen(
                     onClick = onDeleteMenu,
                     modifier = Modifier
                         .weight(1f)
-                        .height(56.dp),
+                        .height(Dimens.XXXLarge),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC62828))
                 ) {
                     Text(text = stringResource(id = R.string.btn_delete), color = Color.White)
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(Dimens.Medium))
 
             // 3. 【シェアボタン】 優先度を下げて下に配置（サイズは標準）
             Button(
@@ -1815,17 +1836,17 @@ fun MenuManageScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
+                    .height(Dimens.XXXLarge),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))
             ) {
                 Text(text = stringResource(id = R.string.btn_share_menu), color = Color.White)
             }
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(Dimens.Medium))
             Button(
                 onClick = onBack,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
+                    .height(Dimens.XXXLarge),
                 colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)
             ) {
                 Text(text = stringResource(id = R.string.btn_back), color = Color.Gray)
@@ -1849,10 +1870,10 @@ fun MenuListScreen(
     ) {
         Column(
             modifier = Modifier
-                .widthIn(max = 480.dp)
+                .widthIn(max = Dimens.widthmax)
                 .fillMaxWidth()
                 .background(DarkBackgroundColor)
-                .padding(12.dp)
+                .padding(Dimens.Medium)
         ) {
             Text(
                 text = stringResource(id = R.string.title_select_menu),
@@ -1860,7 +1881,7 @@ fun MenuListScreen(
                 fontWeight = FontWeight.Bold,
                 color = DarkTextColor
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(Dimens.Medium))
 
             val invalidDataMessage = stringResource(R.string.err_invalid_data)
             val errorFormatMessage = stringResource(R.string.err_format_error)
@@ -1893,13 +1914,13 @@ fun MenuListScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
+                    .height(Dimens.XXXLarge),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF6C00))
             ) {
                 Text(text = stringResource(id = R.string.btn_import_clipboard), color = Color.White)
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(Dimens.Medium))
 
             LazyColumn(
                 modifier = Modifier
@@ -1909,14 +1930,14 @@ fun MenuListScreen(
                 itemsIndexed(menus) { index, menu ->
                     Card(
                         modifier = Modifier
-                            .padding(vertical = 4.dp)
+                            .padding(vertical = Dimens.Tiny)
                             .fillMaxWidth()
                             .clickable { onSelectMenu(index) },
                         colors = CardDefaults.cardColors(containerColor = DarkSurfaceColor)
                     ) {
                         Row(
                             modifier = Modifier
-                                .padding(12.dp), verticalAlignment = Alignment.CenterVertically
+                                .padding(Dimens.Medium), verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
                                 menu.name,
@@ -1938,12 +1959,12 @@ fun MenuListScreen(
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(Dimens.Medium))
             Button(
                 onClick = onBack,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
+                    .height(Dimens.XXXLarge),
                 colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)
             ) {
                 Text(text = stringResource(id = R.string.btn_back), color = Color.White)
