@@ -1261,9 +1261,9 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                     .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                ProgressBar(totalRemainingSeconds, totalMenuSeconds)
+                ProgressBar(totalRemainingSeconds, totalMenuSeconds, isStarting)
                 Spacer(modifier = Modifier.height(Dimens.Medium))
-                RemainingTime(totalRemainingSeconds, totalMenuSeconds)
+                RemainingTime(totalRemainingSeconds, totalMenuSeconds, isStarting)
                 Spacer(modifier = Modifier.height(Dimens.Medium))
 
                 val step: TimerStep = steps.getOrNull(currentStepIndex) ?: return
@@ -1399,8 +1399,10 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                         contentAlignment = Alignment.Center
                     ) {
                         Button(
+                            enabled = !isStarting,
                             onClick = { navigateToNextStep() },
                             modifier = Modifier
+                                .alpha(if (isStarting) 0f else 1f)
                                 .size(Dimens.SkipCircle)
                                 .offset(x = (-16).dp),
                             shape = CircleShape,
@@ -1486,7 +1488,7 @@ fun FinishedScreen(onDone: () -> Unit) {
 
 
 @Composable
-fun ProgressBar(remaining: Int, total: Int) {
+fun ProgressBar(remaining: Int, total: Int, isStarting: Boolean) {
     val progress =
         if (total > 0) {
             (total - remaining).toFloat() / total.toFloat()
@@ -1496,7 +1498,7 @@ fun ProgressBar(remaining: Int, total: Int) {
     LinearProgressIndicator(
         progress = { progress },
         modifier = Modifier
-            .fillMaxWidth()
+            .alpha(if (isStarting) 0f else 1f)
             .height(Dimens.Medium)
             .clip(CircleShape),
         color = Color.Cyan,
@@ -1505,14 +1507,17 @@ fun ProgressBar(remaining: Int, total: Int) {
 }
 
 @Composable
-fun RemainingTime(remaining: Int, total: Int) {
+fun RemainingTime(remaining: Int, total: Int, isStarting: Boolean) {
     Text(
+        modifier = Modifier.alpha(if (isStarting) 0f else 1f),
         text = stringResource(id = R.string.label_total_remaining),
         fontSize = 12.sp,
         color = Color.Gray,
         fontWeight = FontWeight.Bold
     )
-    Row(verticalAlignment = Alignment.Bottom) {
+    Row(modifier = Modifier
+        .alpha(if (isStarting) 0f else 1f)
+        ,verticalAlignment = Alignment.Bottom) {
         Text(
             String.format(Locale.US, "%02d:%02d", remaining / 60, remaining % 60),
             fontSize = 32.sp,
