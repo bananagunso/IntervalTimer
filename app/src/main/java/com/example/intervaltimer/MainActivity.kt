@@ -65,26 +65,36 @@ import androidx.compose.ui.platform.LocalConfiguration
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlin.time.Duration.Companion.milliseconds
+import androidx.compose.ui.text.TextStyle
 
 object Dimens {
     val Zero = 0.dp
-    val Tiny = 4.dp
-    val Small = 8.dp
-    val Medium = 12.dp
-    val Large = 24.dp
-    val XLarge = 36.dp
+    val Tiny = 8.dp
+    val Small = 16.dp
+    val Medium = 24.dp
+    val Large = 32.dp
+    val XLarge = 40.dp
     val XXLarge = 48.dp
-    val XXXLarge = 60.dp
-    val reel150 = 150.dp
+    val XXXLarge = 56.dp
+    val reel150 = 148.dp
     val WidthMax = 480.dp
     val PlayCircle = 80.dp
     val SkipCircle = 64.dp
     val Icon = 40.dp
     val StartTraining = 120.dp
-    val ColorSelected = 44.dp
-    val ColorNotSelected = 38.dp
-    val ColorCheck = 38.dp
-    val ColorBorder = 3.dp
+    val ColorSelected = 40.dp
+    val ColorNotSelected = 40.dp
+    val ColorCheck = 16.dp
+    val ColorBorder = 4.dp
+}
+
+object Font {
+    val Micro: TextStyle = TextStyle(fontSize = 14.sp, lineHeight = 20.sp)
+    val Small: TextStyle = TextStyle(fontSize = 16.sp, lineHeight = 24.sp)
+    val Medium: TextStyle = TextStyle(fontSize = 18.sp, lineHeight = 24.sp)
+    val Large: TextStyle = TextStyle(fontSize = 24.sp, lineHeight = 32.sp, fontWeight = FontWeight.Bold)
+    val XLarge: TextStyle = TextStyle(fontSize = 32.sp, lineHeight = 40.sp, fontWeight = FontWeight.Bold)
+    val XXLarge: TextStyle = TextStyle(fontSize = 40.sp, lineHeight = 48.sp, fontWeight = FontWeight.Bold)
 }
 
 data class TimerStep(
@@ -263,7 +273,7 @@ fun TopScreen(
             ) {
                 Text(
                     text = stringResource(id = R.string.title_interval_timer),
-                    fontSize = 28.sp,
+                    style = Font.XLarge,
                     fontWeight = FontWeight.Bold,
                     color = DarkTextColor
                 )
@@ -284,7 +294,7 @@ fun TopScreen(
             ) {
                 Text(
                     text = stringResource(id = R.string.title_interval_timer),
-                    fontSize = 28.sp,
+                    style = Font.XLarge,
                     fontWeight = FontWeight.Bold,
                     color = DarkTextColor
                 )
@@ -312,7 +322,10 @@ fun TopScreenButton(textRes: Int, onClick: () -> Unit) {
             contentColor = Color.White
         )
     ) {
-        Text(text = stringResource(id = textRes), fontSize = 28.sp)
+        Text(
+            text = stringResource(id = textRes),
+            style = Font.XLarge
+            )
     }
 }
 
@@ -374,7 +387,7 @@ fun TimerScreen(
             ) {
                 Text(
                     text = stringResource(id = if (editMenuIndex == -1) R.string.title_create_menu else R.string.title_edit_menu),
-                    fontSize = 28.sp,
+                    style = Font.XLarge,
                     fontWeight = FontWeight.Bold,
                     color = DarkTextColor
                 )
@@ -423,7 +436,7 @@ fun TimerScreen(
                 //カラーラベル
                 Text(
                     text = stringResource(id = R.string.label_color),
-                    fontSize = 14.sp,
+                    style = Font.Micro,
                     color = Color.Gray
                 )
                 Row(
@@ -582,7 +595,7 @@ fun TimerScreen(
                                             minutes,
                                             seconds
                                         ) + " / ${step.tempo}RPM",
-                                        fontSize = 14.sp,
+                                        style = Font.Micro,
                                         color = Color.LightGray
                                     )
                                 }
@@ -592,7 +605,10 @@ fun TimerScreen(
                                         val item = tempSteps.removeAt(index)
                                         tempSteps.add(index - 1, item)
                                     }) {
-                                        Text("▲", color = Color.LightGray, fontSize = 14.sp)
+                                        Text("▲",
+                                            color = Color.LightGray,
+                                            style = Font.Micro
+                                        )
                                     }
                                 } else {
                                     Spacer(modifier = Modifier.size(Dimens.XXLarge))
@@ -603,7 +619,10 @@ fun TimerScreen(
                                         val item = tempSteps.removeAt(index)
                                         tempSteps.add(index + 1, item)
                                     }) {
-                                        Text("▼", color = Color.LightGray, fontSize = 14.sp)
+                                        Text("▼",
+                                            color = Color.LightGray,
+                                            style = Font.Micro
+                                        )
                                     }
                                 } else {
                                     Spacer(modifier = Modifier.size(Dimens.XXLarge))
@@ -661,7 +680,7 @@ fun TimerScreen(
         ) {
             Text(
                 text = stringResource(id = if (editMenuIndex == -1) R.string.title_create_menu else R.string.title_edit_menu),
-                fontSize = 28.sp,
+                style = Font.XLarge,
                 fontWeight = FontWeight.Bold,
                 color = DarkTextColor
             )
@@ -712,7 +731,7 @@ fun TimerScreen(
             //カラーラベル
             Text(
                 text = stringResource(id = R.string.label_color),
-                fontSize = 14.sp,
+                style = Font.Micro,
                 color = Color.Gray
             )
             Row(
@@ -729,7 +748,7 @@ fun TimerScreen(
                             .size(if (isSelected) Dimens.ColorSelected else Dimens.ColorNotSelected)
                             .background(color, shape = CircleShape)
                             .border(
-                                width = if (isSelected) Dimens.ColorNotSelected else Dimens.Zero,
+                                width = if (isSelected) Dimens.ColorBorder else Dimens.Zero,
                                 color = if (isSelected) Color.White else Color.Transparent,
                                 shape = CircleShape
                             )
@@ -857,7 +876,7 @@ fun TimerScreen(
                                         minutes,
                                         seconds
                                     ) + " / ${step.tempo}RPM",
-                                    fontSize = 14.sp,
+                                    style = Font.Micro,
                                     color = Color.LightGray
                                 )
                             }
@@ -867,7 +886,10 @@ fun TimerScreen(
                                     val item = tempSteps.removeAt(index)
                                     tempSteps.add(index - 1, item)
                                 }) {
-                                    Text("▲", color = Color.LightGray, fontSize = 14.sp)
+                                    Text("▲",
+                                        color = Color.LightGray,
+                                        style = Font.Micro
+                                    )
                                 }
                             } else {
                                 Spacer(modifier = Modifier.size(Dimens.XXLarge))
@@ -878,7 +900,10 @@ fun TimerScreen(
                                     val item = tempSteps.removeAt(index)
                                     tempSteps.add(index + 1, item)
                                 }) {
-                                    Text("▼", color = Color.LightGray, fontSize = 14.sp)
+                                    Text("▼",
+                                        color = Color.LightGray,
+                                        style = Font.Micro
+                                    )
                                 }
                             } else {
                                 Spacer(modifier = Modifier.size(Dimens.XXLarge))
@@ -1028,7 +1053,7 @@ fun DigitWheel(
             val isSelected = (digit == value)
             Text(
                 text = digit.toString(),
-                fontSize = if (isSelected) 32.sp else 20.sp,
+                style = if (isSelected) Font.XLarge  else Font.Medium,
                 color = if (isSelected) Color.White else Color.Gray,
                 modifier = Modifier
                     .padding(Dimens.Small)
@@ -1047,7 +1072,7 @@ fun PresetEditScreen(presetNames: SnapshotStateList<String>) {
         .padding(Dimens.Medium)) {
         Text(
             text = stringResource(id = R.string.title_preset_edit),
-            fontSize = 28.sp,
+            style = Font.XLarge,
             fontWeight = FontWeight.Bold,
             color = DarkTextColor
         )
@@ -1087,7 +1112,7 @@ fun PresetEditScreen(presetNames: SnapshotStateList<String>) {
                     Text(
                         name,
                         modifier = Modifier.weight(1f),
-                        fontSize = 18.sp,
+                        style = Font.Medium,
                         color = Color.White
                     )
                     IconButton(onClick = { presetNames.remove(name) }) {
@@ -1320,14 +1345,14 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                     ) {
                         Text(
                             step.name,
-                            fontSize = 28.sp,
+                            style = Font.XLarge,
                             fontWeight = FontWeight.Bold,
                             color = contentColor
                         )
                         Spacer(modifier = Modifier.height(Dimens.Medium))
                         Text(
                             "${step.tempo} RPM",
-                            fontSize = 42.sp,
+                            style = Font.XXLarge,
                             fontWeight = FontWeight.Black,
                             color = contentColor
                         )
@@ -1456,7 +1481,7 @@ fun FinishedScreen(onDone: () -> Unit) {
         ) {
             Text(
                 text = stringResource(id = R.string.finished_message),
-                fontSize = 32.sp,
+                style = Font.XLarge,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )
@@ -1477,7 +1502,7 @@ fun FinishedScreen(onDone: () -> Unit) {
             ) {
                 Text(
                     text = stringResource(id = R.string.btn_back),
-                    fontSize = 18.sp,
+                    style = Font.Medium,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
@@ -1511,7 +1536,7 @@ fun RemainingTime(remaining: Int, total: Int, isStarting: Boolean) {
     Text(
         modifier = Modifier.alpha(if (isStarting) 0f else 1f),
         text = stringResource(id = R.string.label_total_remaining),
-        fontSize = 12.sp,
+        style = Font.Micro,
         color = Color.Gray,
         fontWeight = FontWeight.Bold
     )
@@ -1520,13 +1545,13 @@ fun RemainingTime(remaining: Int, total: Int, isStarting: Boolean) {
         ,verticalAlignment = Alignment.Bottom) {
         Text(
             String.format(Locale.US, "%02d:%02d", remaining / 60, remaining % 60),
-            fontSize = 32.sp,
+            style = Font.XLarge,
             fontWeight = FontWeight.Black,
             color = Color.White
         )
         Text(
             String.format(Locale.US, " / %02d:%02d", total / 60, total % 60),
-            fontSize = 18.sp,
+            style = Font.Medium,
             fontWeight = FontWeight.Medium,
             color = Color.Gray,
             modifier = Modifier.padding(bottom = Dimens.Tiny, start = Dimens.Tiny)
@@ -1548,7 +1573,7 @@ fun NextStepRow(step: TimerStep, label: String) {
         ) {
             Text(
                 "$label: ${step.name}",
-                fontSize = 18.sp,
+                style = Font.Medium,
                 fontWeight = FontWeight.Bold,
                 color = Color.White.copy(alpha = 0.9f),
                 modifier = Modifier.weight(1f)
@@ -1562,7 +1587,7 @@ fun NextStepRow(step: TimerStep, label: String) {
                     minutes,
                     seconds
                 ),
-                fontSize = 16.sp,
+                style = Font.Small,
                 fontWeight = FontWeight.Medium,
                 color = Color.White.copy(alpha = 0.8f)
             )
@@ -1600,7 +1625,7 @@ fun MenuManageScreen(
             ) {
                 Text(
                     menu.name,
-                    fontSize = 28.sp,
+                    style = Font.XLarge,
                     fontWeight = FontWeight.Bold,
                     color = DarkTextColor
                 )
@@ -1635,7 +1660,7 @@ fun MenuManageScreen(
                                         modifier = Modifier.weight(1f),
                                         fontWeight = FontWeight.Bold,
                                         color = Color.White,
-                                        fontSize = 18.sp
+                                        style = Font.Medium
                                     )
                                     val minutes = step.durationSeconds / 60
                                     val seconds = step.durationSeconds % 60
@@ -1645,7 +1670,8 @@ fun MenuManageScreen(
                                             minutes,
                                             seconds,
                                             step.tempo
-                                        ), fontSize = 16.sp, color = Color.LightGray
+                                        ), style = Font.Small,
+                                        color = Color.LightGray
                                     )
                                 }
                             }
@@ -1669,7 +1695,7 @@ fun MenuManageScreen(
                 ) {
                     Text(
                         text = stringResource(id = R.string.btn_start_training_long),
-                        fontSize = 28.sp,
+                        style = Font.XLarge,
                         fontWeight = FontWeight.ExtraBold,
                         color = Color.White
                     )
@@ -1734,7 +1760,7 @@ fun MenuManageScreen(
             .fillMaxSize()
             .background(DarkBackgroundColor)
             .padding(Dimens.Medium)) {
-            Text(menu.name, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkTextColor)
+            Text(menu.name, style = Font.XLarge, fontWeight = FontWeight.Bold, color = DarkTextColor)
             Spacer(modifier = Modifier.height(Dimens.Medium))
 
             // ステップ一覧（ここは変更なし）
@@ -1773,7 +1799,7 @@ fun MenuManageScreen(
                                         minutes,
                                         seconds,
                                         step.tempo
-                                    ), fontSize = 14.sp, color = Color.LightGray
+                                    ), style = Font.Micro, color = Color.LightGray
                                 )
                             }
                         }
@@ -1794,7 +1820,7 @@ fun MenuManageScreen(
             ) {
                 Text(
                     text = stringResource(id = R.string.btn_start_training_long),
-                    fontSize = 28.sp,
+                    style = Font.XLarge,
                     fontWeight = FontWeight.ExtraBold,
                     color = Color.White
                 )
@@ -1882,7 +1908,7 @@ fun MenuListScreen(
         ) {
             Text(
                 text = stringResource(id = R.string.title_select_menu),
-                fontSize = 28.sp,
+                style = Font.XLarge,
                 fontWeight = FontWeight.Bold,
                 color = DarkTextColor
             )
@@ -1946,13 +1972,13 @@ fun MenuListScreen(
                         ) {
                             Text(
                                 menu.name,
-                                fontSize = 20.sp,
+                                style = Font.Large,
                                 modifier = Modifier.weight(1f),
                                 color = Color.White
                             )
                             Text(
                                 text = stringResource(R.string.label_steps_count, menu.steps.size),
-                                fontSize = 16.sp,
+                                style = Font.Medium,
                                 color = Color.Gray
                             )
                             Icon(
