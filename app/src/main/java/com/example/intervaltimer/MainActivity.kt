@@ -66,6 +66,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlin.time.Duration.Companion.milliseconds
 import androidx.compose.ui.text.TextStyle
+import com.example.intervaltimer.TrainingMenu
 
 object Dimens {
     val Zero = 0.dp
@@ -92,9 +93,12 @@ object Font {
     val Micro: TextStyle = TextStyle(fontSize = 14.sp, lineHeight = 20.sp)
     val Small: TextStyle = TextStyle(fontSize = 16.sp, lineHeight = 24.sp)
     val Medium: TextStyle = TextStyle(fontSize = 18.sp, lineHeight = 24.sp)
-    val Large: TextStyle = TextStyle(fontSize = 24.sp, lineHeight = 32.sp, fontWeight = FontWeight.Bold)
-    val XLarge: TextStyle = TextStyle(fontSize = 32.sp, lineHeight = 40.sp, fontWeight = FontWeight.Bold)
-    val XXLarge: TextStyle = TextStyle(fontSize = 40.sp, lineHeight = 48.sp, fontWeight = FontWeight.Bold)
+    val Large: TextStyle =
+        TextStyle(fontSize = 24.sp, lineHeight = 32.sp, fontWeight = FontWeight.Bold)
+    val XLarge: TextStyle =
+        TextStyle(fontSize = 32.sp, lineHeight = 40.sp, fontWeight = FontWeight.Bold)
+    val XXLarge: TextStyle =
+        TextStyle(fontSize = 40.sp, lineHeight = 48.sp, fontWeight = FontWeight.Bold)
 }
 
 data class TimerStep(
@@ -257,54 +261,29 @@ fun TopScreen(
     onNavigateToRunning: () -> Unit,
     onNavigateToEdit: () -> Unit
 ) {
-    val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        if (isLandscape) {
-            Column(
-                modifier = Modifier
-                    .widthIn(max = Dimens.WidthMax)
-                    .fillMaxWidth()
-                    .background(DarkBackgroundColor)
-                    .padding(Dimens.Medium)
-            ) {
-                Text(
-                    text = stringResource(id = R.string.title_interval_timer),
-                    style = Font.XLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = DarkTextColor
-                )
-                Spacer(modifier = Modifier.height(Dimens.Medium))
-                TopScreenButton(textRes = R.string.btn_create_menu, onNavigateToAdd)
-                Spacer(modifier = Modifier.height(Dimens.Medium))
-                TopScreenButton(textRes = R.string.btn_start_training, onNavigateToRunning)
-                Spacer(modifier = Modifier.height(Dimens.Medium))
-                TopScreenButton(textRes = R.string.btn_edit_presets, onNavigateToEdit)
-            }
-        } else {
-            Column(
-                modifier = Modifier
-                    .widthIn(max = Dimens.WidthMax)
-                    .fillMaxWidth()
-                    .background(DarkBackgroundColor)
-                    .padding(Dimens.Medium)
-            ) {
-                Text(
-                    text = stringResource(id = R.string.title_interval_timer),
-                    style = Font.XLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = DarkTextColor
-                )
-                Spacer(modifier = Modifier.height(Dimens.Medium))
-                TopScreenButton(textRes = R.string.btn_create_menu, onNavigateToAdd)
-                Spacer(modifier = Modifier.height(Dimens.Medium))
-                TopScreenButton(textRes = R.string.btn_start_training, onNavigateToRunning)
-                Spacer(modifier = Modifier.height(Dimens.Medium))
-                TopScreenButton(textRes = R.string.btn_edit_presets, onNavigateToEdit)
-            }
+        Column(
+            modifier = Modifier
+                .widthIn(max = Dimens.WidthMax)
+                .fillMaxWidth()
+                .background(DarkBackgroundColor)
+                .padding(Dimens.Medium)
+        ) {
+            Text(
+                text = stringResource(id = R.string.title_interval_timer),
+                style = Font.XLarge,
+                fontWeight = FontWeight.Bold,
+                color = DarkTextColor
+            )
+            Spacer(modifier = Modifier.height(Dimens.Small))
+            TopScreenButton(textRes = R.string.btn_create_menu, onNavigateToAdd)
+            Spacer(modifier = Modifier.height(Dimens.Small))
+            TopScreenButton(textRes = R.string.btn_start_training, onNavigateToRunning)
+            Spacer(modifier = Modifier.height(Dimens.Small))
+            TopScreenButton(textRes = R.string.btn_edit_presets, onNavigateToEdit)
         }
     }
 }
@@ -325,7 +304,7 @@ fun TopScreenButton(textRes: Int, onClick: () -> Unit) {
         Text(
             text = stringResource(id = textRes),
             style = Font.XLarge
-            )
+        )
     }
 }
 
@@ -371,312 +350,23 @@ fun TimerScreen(
     val selectedColor = colorOptions[selectedIndex]
 
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-    if (isLandscape) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(DarkBackgroundColor)
-                .padding(horizontal = Dimens.Large),
-            verticalAlignment = Alignment.Bottom
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth(0.5f)
-                    .background(DarkBackgroundColor)
-                    .padding(horizontal = Dimens.Medium),
-            ) {
-                Text(
-                    text = stringResource(id = if (editMenuIndex == -1) R.string.title_create_menu else R.string.title_edit_menu),
-                    style = Font.XLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = DarkTextColor
-                )
-                Spacer(modifier = Modifier.height(Dimens.Medium))
-                //ステップ名
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    OutlinedTextField(
-                        value = inputName,
-                        onValueChange = { inputName = it },
-                        label = { Text(text = stringResource(id = R.string.hint_step_name)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            focusedLabelColor = MaterialTheme.colorScheme.primary,
-                            unfocusedLabelColor = Color.Gray
-                        ),
-                        trailingIcon = {
-                            IconButton(onClick = { expanded = !expanded }) {
-                                Icon(
-                                    Icons.Default.ArrowDropDown,
-                                    contentDescription = null,
-                                    tint = Color.White
-                                )
-                            }
-                        }
-                    )
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                        modifier = Modifier.background(DarkSurfaceColor)
-                    ) {
-                        presetNames.forEach { name ->
-                            DropdownMenuItem(
-                                text = { Text(name, color = Color.White) },
-                                onClick = {
-                                    inputName = name
-                                    expanded = false
-                                }
-                            )
-                        }
-                    }
-                }
 
-                Spacer(modifier = Modifier.height(Dimens.Medium))
-                //カラーラベル
-                Text(
-                    text = stringResource(id = R.string.label_color),
-                    style = Font.Micro,
-                    color = Color.Gray
-                )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = Dimens.Tiny),
-                    horizontalArrangement = Arrangement.spacedBy(Dimens.Medium)
-                ) {
-                    colorOptions.forEachIndexed { index, color ->
-                        val isSelected = (selectedIndex == index) // インデックスで比較
-
-                        Box(
-                            modifier = Modifier
-                                .size(if (isSelected) Dimens.ColorSelected else Dimens.ColorNotSelected)
-                                .background(color, shape = CircleShape)
-                                .border(
-                                    width = if (isSelected) Dimens.ColorBorder else Dimens.Zero,
-                                    color = if (isSelected) Color.White else Color.Transparent,
-                                    shape = CircleShape
-                                )
-                                .clickable { selectedIndex = index },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            if (isSelected) {
-                                Icon(
-                                    imageVector = Icons.Default.Check,
-                                    contentDescription = null,
-                                    tint = if (color.luminance() > 0.5f) Color.Black else Color.White,
-                                    modifier = Modifier.size(Dimens.ColorCheck)
-                                )
-                            }
-                        }
-                    }
-                }
-                //時間とRPMは横並び
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(Dimens.Small)
-                ) {
-                    OutlinedButton(
-                        onClick = { showTimePicker = true },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(Dimens.XXXLarge),
-                        shape = OutlinedTextFieldDefaults.shape
-                    ) {
-                        Text(text = "${inputMinutes}分 ${inputSeconds}秒", color = Color.White)
-                    }
-                    OutlinedButton(
-                        onClick = { showTempoPicker = true },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(Dimens.XXXLarge),
-                        shape = OutlinedTextFieldDefaults.shape
-                    ) {
-                        Text(text = "$inputTempo RPM", color = Color.White)
-                    }
-                }
-//時間
-                if (showTimePicker) {
-                    ModalBottomSheet(
-                        onDismissRequest = { showTimePicker = false },
-                        containerColor = DarkSurfaceColor // RPMと同じ色
-                    ) {
-                        TimeDrumPicker(
-                            initialMinutes = inputMinutes,
-                            initialSeconds = inputSeconds,
-                            onTimeSelected = { m, s ->
-                                inputMinutes = m
-                                inputSeconds = s
-                            }
-                        )
-                    }
-                }
-//RPM
-                if (showTempoPicker) {
-                    ModalBottomSheet(
-                        onDismissRequest = { showTempoPicker = false },
-                        containerColor = DarkSurfaceColor
-                    ) {
-                        RpmDrumPicker(
-                            initialRpm = 85, // または現在の設定値
-                            onRpmSelected = { selectedRpm ->
-                                inputTempo = selectedRpm.toString() // ここで親の状態を更新
-                            }
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(Dimens.Medium))
-//ステップ追加ボタン
-                Button(
-                    onClick = {
-                        if (inputName.isNotBlank()) {
-                            // ここで計算！
-                            val totalSeconds = (inputMinutes * 60) + inputSeconds
-
-                            tempSteps.add(
-                                TimerStep(
-                                    name = inputName,
-                                    durationSeconds = totalSeconds, // 計算済みの合計値を渡す
-                                    tempo = inputTempo.toIntOrNull() ?: 0,
-                                    color = selectedColor
-                                )
-                            )
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(Dimens.XXXLarge)
-                ) {
-                    Text(text = stringResource(id = R.string.btn_add_step))
-                }
-                Spacer(modifier = Modifier.height(Dimens.Medium))
-            }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(DarkBackgroundColor)
-                    .padding(horizontal = Dimens.Medium),
-            ) {
-                LazyColumn(
-                    modifier = Modifier
-                        .weight(1f)
-                        .background(DarkBackgroundColor)
-                        .padding(horizontal = Dimens.Medium),
-                ) {
-                    itemsIndexed(tempSteps) { index, step ->
-                        Card(
-                            modifier = Modifier
-                                .padding(vertical = Dimens.Tiny)
-                                .fillMaxWidth(),
-                            colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .padding(Dimens.Small), verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(Dimens.Medium)
-                                        .background(step.color, shape = CircleShape)
-                                )
-                                Spacer(modifier = Modifier.width(Dimens.Medium))
-                                Column(modifier = Modifier.weight(1f)) {
-                                    val minutes = step.durationSeconds / 60
-                                    val seconds = step.durationSeconds % 60
-                                    Text(
-                                        step.name,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White
-                                    )
-                                    Text(
-                                        text = String.format(
-                                            "%02d:%02d",
-                                            minutes,
-                                            seconds
-                                        ) + " / ${step.tempo}RPM",
-                                        style = Font.Micro,
-                                        color = Color.LightGray
-                                    )
-                                }
-
-                                if (index > 0) {
-                                    IconButton(onClick = {
-                                        val item = tempSteps.removeAt(index)
-                                        tempSteps.add(index - 1, item)
-                                    }) {
-                                        Text("▲",
-                                            color = Color.LightGray,
-                                            style = Font.Micro
-                                        )
-                                    }
-                                } else {
-                                    Spacer(modifier = Modifier.size(Dimens.XXLarge))
-                                }
-
-                                if (index < tempSteps.lastIndex) {
-                                    IconButton(onClick = {
-                                        val item = tempSteps.removeAt(index)
-                                        tempSteps.add(index + 1, item)
-                                    }) {
-                                        Text("▼",
-                                            color = Color.LightGray,
-                                            style = Font.Micro
-                                        )
-                                    }
-                                } else {
-                                    Spacer(modifier = Modifier.size(Dimens.XXLarge))
-                                }
-
-                                IconButton(onClick = { tempSteps.remove(step) }) {
-                                    Icon(
-                                        Icons.Default.Delete,
-                                        contentDescription = null,
-                                        tint = Color.LightGray
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-//トレーニングメニュー名
-                OutlinedTextField(
-                    value = menuName,
-                    onValueChange = { menuName = it },
-                    label = { Text(text = stringResource(id = R.string.hint_menu_name)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White
-                    )
-                )
-                Spacer(modifier = Modifier.height(Dimens.Medium))
-//保存ボタン
-                Button(
-                    onClick = {
-                        val updatedMenu = TrainingMenu(name = menuName, steps = tempSteps.toList())
-                        if (editMenuIndex == -1) {
-                            allSavedMenus.add(updatedMenu)
-                        } else {
-                            allSavedMenus[editMenuIndex] = updatedMenu
-                        }
-                        onSaveFinished()
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(Dimens.XXXLarge)
-                ) {
-                    Text(text = stringResource(id = if (editMenuIndex == -1) R.string.btn_save_menu else R.string.btn_overwrite_menu))
-                }
-                Spacer(modifier = Modifier.height(Dimens.Medium))
-            }
-        }
+    var rowModifier: Modifier = Modifier
+        .background(DarkBackgroundColor)
+        .padding(horizontal = Dimens.Small)
+    rowModifier = if (isLandscape) {
+        rowModifier.fillMaxWidth(0.5f) // 横画面なら横幅半分
     } else {
+        rowModifier.fillMaxSize()       // 【else以降】縦画面なら全画面
+    }
+
+
+    Row(
+        modifier = rowModifier,
+        verticalAlignment = Alignment.Bottom
+    ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(DarkBackgroundColor)
-                .padding(Dimens.Medium)
+            modifier = rowModifier
         ) {
             Text(
                 text = stringResource(id = if (editMenuIndex == -1) R.string.title_create_menu else R.string.title_edit_menu),
@@ -684,8 +374,7 @@ fun TimerScreen(
                 fontWeight = FontWeight.Bold,
                 color = DarkTextColor
             )
-            Spacer(modifier = Modifier.height(Dimens.Medium))
-
+            Spacer(modifier = Modifier.height(Dimens.Small))
             //ステップ名
             Box(modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
@@ -725,9 +414,7 @@ fun TimerScreen(
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(Dimens.Medium))
-
+            Spacer(modifier = Modifier.height(Dimens.Small))
             //カラーラベル
             Text(
                 text = stringResource(id = R.string.label_color),
@@ -738,7 +425,7 @@ fun TimerScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = Dimens.Tiny),
-                horizontalArrangement = Arrangement.spacedBy(Dimens.Medium)
+                horizontalArrangement = Arrangement.spacedBy(Dimens.Tiny)
             ) {
                 colorOptions.forEachIndexed { index, color ->
                     val isSelected = (selectedIndex == index) // インデックスで比較
@@ -766,8 +453,7 @@ fun TimerScreen(
                     }
                 }
             }
-
-//時間とRPMは横並び
+            //時間とRPMは横並び
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(Dimens.Small)
@@ -821,6 +507,7 @@ fun TimerScreen(
                     )
                 }
             }
+            Spacer(modifier = Modifier.height(Dimens.Small))
 //ステップ追加ボタン
             Button(
                 onClick = {
@@ -839,117 +526,152 @@ fun TimerScreen(
                     }
                 },
                 modifier = Modifier
-                    .padding(top = Dimens.Small)
                     .fillMaxWidth()
                     .height(Dimens.XXXLarge)
             ) {
                 Text(text = stringResource(id = R.string.btn_add_step))
             }
+            Spacer(modifier = Modifier.height(Dimens.Small))
 
-            LazyColumn(modifier = Modifier
-                .weight(1f)
-                .padding(vertical = Dimens.Small)) {
-                itemsIndexed(tempSteps) { index, step ->
-                    Card(
+            if (!isLandscape) {
+                ScreenContent(allSavedMenus, editMenuIndex, onSaveFinished)
+            }
+        }
+
+        if (isLandscape) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(DarkBackgroundColor)
+                    .padding(horizontal = Dimens.Medium),
+            ) {
+                ScreenContent(allSavedMenus, editMenuIndex, onSaveFinished)
+            }
+        }
+    }
+}
+
+
+@Composable
+fun ScreenContent(
+    allSavedMenus: SnapshotStateList<TrainingMenu>,
+    editMenuIndex: Int,
+    onSaveFinished: () -> Unit
+) {
+    val tempSteps = rememberSaveable { mutableStateListOf<TimerStep>() }
+    var menuName by rememberSaveable { mutableStateOf("新規トレーニング") }
+
+    LazyColumn(
+        modifier = Modifier
+//            .weight(1f)
+//            .background(DarkBackgroundColor)
+            .padding(horizontal = Dimens.Tiny),
+    ) {
+        itemsIndexed(tempSteps) { index, step ->
+            Card(
+                modifier = Modifier
+                    .padding(vertical = Dimens.Tiny)
+                    .fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))
+            ) {
+                Row(
+                    modifier = Modifier.padding(Dimens.Small),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
                         modifier = Modifier
-                            .padding(vertical = Dimens.Tiny)
-                            .fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(Dimens.Small),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(Dimens.Medium)
-                                    .background(step.color, shape = CircleShape)
+                            .size(Dimens.Medium)
+                            .background(step.color, shape = CircleShape)
+                    )
+                    Spacer(modifier = Modifier.width(Dimens.Small))
+                    Column(modifier = Modifier.weight(1f)) {
+                        val minutes = step.durationSeconds / 60
+                        val seconds = step.durationSeconds % 60
+                        Text(
+                            step.name,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Text(
+                            text = String.format(
+                                "%02d:%02d",
+                                minutes,
+                                seconds
+                            ) + " / ${step.tempo}RPM",
+                            style = Font.Micro,
+                            color = Color.LightGray
+                        )
+                    }
+
+                    if (index > 0) {
+                        IconButton(onClick = {
+                            val item = tempSteps.removeAt(index)
+                            tempSteps.add(index - 1, item)
+                        }) {
+                            Text(
+                                "▲",
+                                color = Color.LightGray,
+                                style = Font.Micro
                             )
-                            Spacer(modifier = Modifier.width(Dimens.Medium))
-                            Column(modifier = Modifier.weight(1f)) {
-                                val minutes = step.durationSeconds / 60
-                                val seconds = step.durationSeconds % 60
-                                Text(step.name, fontWeight = FontWeight.Bold, color = Color.White)
-                                Text(
-                                    text = String.format(
-                                        "%02d:%02d",
-                                        minutes,
-                                        seconds
-                                    ) + " / ${step.tempo}RPM",
-                                    style = Font.Micro,
-                                    color = Color.LightGray
-                                )
-                            }
-
-                            if (index > 0) {
-                                IconButton(onClick = {
-                                    val item = tempSteps.removeAt(index)
-                                    tempSteps.add(index - 1, item)
-                                }) {
-                                    Text("▲",
-                                        color = Color.LightGray,
-                                        style = Font.Micro
-                                    )
-                                }
-                            } else {
-                                Spacer(modifier = Modifier.size(Dimens.XXLarge))
-                            }
-
-                            if (index < tempSteps.lastIndex) {
-                                IconButton(onClick = {
-                                    val item = tempSteps.removeAt(index)
-                                    tempSteps.add(index + 1, item)
-                                }) {
-                                    Text("▼",
-                                        color = Color.LightGray,
-                                        style = Font.Micro
-                                    )
-                                }
-                            } else {
-                                Spacer(modifier = Modifier.size(Dimens.XXLarge))
-                            }
-
-                            IconButton(onClick = { tempSteps.remove(step) }) {
-                                Icon(
-                                    Icons.Default.Delete,
-                                    contentDescription = null,
-                                    tint = Color.LightGray
-                                )
-                            }
                         }
+                    } else {
+                        Spacer(modifier = Modifier.size(Dimens.Small))
+                    }
+
+                    if (index < tempSteps.lastIndex) {
+                        IconButton(onClick = {
+                            val item = tempSteps.removeAt(index)
+                            tempSteps.add(index + 1, item)
+                        }) {
+                            Text(
+                                "▼",
+                                color = Color.LightGray,
+                                style = Font.Micro
+                            )
+                        }
+                    } else {
+                        Spacer(modifier = Modifier.size(Dimens.Small))
+                    }
+
+                    IconButton(onClick = { tempSteps.remove(step) }) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = null,
+                            tint = Color.LightGray
+                        )
                     }
                 }
             }
-//トレーニングメニュー名
-            OutlinedTextField(
-                value = menuName,
-                onValueChange = { menuName = it },
-                label = { Text(text = stringResource(id = R.string.hint_menu_name)) },
-                modifier = Modifier.fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White
-                )
-            )
-            Spacer(modifier = Modifier.height(Dimens.Medium))
-//保存ボタン
-            Button(
-                onClick = {
-                    val updatedMenu = TrainingMenu(name = menuName, steps = tempSteps.toList())
-                    if (editMenuIndex == -1) {
-                        allSavedMenus.add(updatedMenu)
-                    } else {
-                        allSavedMenus[editMenuIndex] = updatedMenu
-                    }
-                    onSaveFinished()
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(Dimens.XXXLarge)
-            ) {
-                Text(text = stringResource(id = if (editMenuIndex == -1) R.string.btn_save_menu else R.string.btn_overwrite_menu))
-            }
         }
+    }
+//トレーニングメニュー名
+    OutlinedTextField(
+        value = menuName,
+        onValueChange = { menuName = it },
+        label = { Text(text = stringResource(id = R.string.hint_menu_name)) },
+        modifier = Modifier.fillMaxWidth(),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedTextColor = Color.White,
+            unfocusedTextColor = Color.White
+        )
+    )
+    Spacer(modifier = Modifier.height(Dimens.Small))
+//保存ボタン
+    Button(
+        onClick = {
+            val updatedMenu = TrainingMenu(name = menuName, steps = tempSteps.toList())
+            if (editMenuIndex == -1) {
+                allSavedMenus.add(updatedMenu)
+            } else {
+                allSavedMenus[editMenuIndex] = updatedMenu
+            }
+            onSaveFinished()
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(Dimens.XXXLarge)
+    ) {
+        Text(text = stringResource(id = if (editMenuIndex == -1) R.string.btn_save_menu else R.string.btn_overwrite_menu))
     }
 }
 
@@ -1053,7 +775,7 @@ fun DigitWheel(
             val isSelected = (digit == value)
             Text(
                 text = digit.toString(),
-                style = if (isSelected) Font.XLarge  else Font.Medium,
+                style = if (isSelected) Font.XLarge else Font.Medium,
                 color = if (isSelected) Color.White else Color.Gray,
                 modifier = Modifier
                     .padding(Dimens.Small)
@@ -1066,17 +788,19 @@ fun DigitWheel(
 @Composable
 fun PresetEditScreen(presetNames: SnapshotStateList<String>) {
     var newPreset by rememberSaveable { mutableStateOf("") }
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .background(DarkBackgroundColor)
-        .padding(Dimens.Medium)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(DarkBackgroundColor)
+            .padding(Dimens.Medium)
+    ) {
         Text(
             text = stringResource(id = R.string.title_preset_edit),
             style = Font.XLarge,
             fontWeight = FontWeight.Bold,
             color = DarkTextColor
         )
-        Spacer(modifier = Modifier.height(Dimens.Medium))
+        Spacer(modifier = Modifier.height(Dimens.Small))
         Row(verticalAlignment = Alignment.CenterVertically) {
             OutlinedTextField(
                 value = newPreset,
@@ -1088,7 +812,7 @@ fun PresetEditScreen(presetNames: SnapshotStateList<String>) {
                     unfocusedTextColor = Color.White
                 )
             )
-            Spacer(modifier = Modifier.width(Dimens.Medium))
+            Spacer(modifier = Modifier.width(Dimens.Small))
             Button(
                 onClick = {
                     if (newPreset.isNotBlank()) {
@@ -1100,7 +824,7 @@ fun PresetEditScreen(presetNames: SnapshotStateList<String>) {
                 Text(text = stringResource(id = R.string.btn_add))
             }
         }
-        Spacer(modifier = Modifier.height(Dimens.Medium))
+        Spacer(modifier = Modifier.height(Dimens.Small))
         LazyColumn(modifier = Modifier.weight(1f)) {
             items(presetNames) { name ->
                 Row(
@@ -1287,9 +1011,9 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 ProgressBar(totalRemainingSeconds, totalMenuSeconds, isStarting)
-                Spacer(modifier = Modifier.height(Dimens.Medium))
+                Spacer(modifier = Modifier.height(Dimens.Small))
                 RemainingTime(totalRemainingSeconds, totalMenuSeconds, isStarting)
-                Spacer(modifier = Modifier.height(Dimens.Medium))
+                Spacer(modifier = Modifier.height(Dimens.Small))
 
                 val step: TimerStep = steps.getOrNull(currentStepIndex) ?: return
                 var isPulse by remember { mutableStateOf(false) }
@@ -1349,14 +1073,14 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                             fontWeight = FontWeight.Bold,
                             color = contentColor
                         )
-                        Spacer(modifier = Modifier.height(Dimens.Medium))
+                        Spacer(modifier = Modifier.height(Dimens.Small))
                         Text(
                             "${step.tempo} RPM",
                             style = Font.XXLarge,
                             fontWeight = FontWeight.Black,
                             color = contentColor
                         )
-                        Spacer(modifier = Modifier.height(Dimens.Medium))
+                        Spacer(modifier = Modifier.height(Dimens.Small))
                         val minutes = step.durationSeconds / 60
                         val seconds = step.durationSeconds % 60
                         val remainingTimeMinutes = remainingTime / 60
@@ -1540,9 +1264,10 @@ fun RemainingTime(remaining: Int, total: Int, isStarting: Boolean) {
         color = Color.Gray,
         fontWeight = FontWeight.Bold
     )
-    Row(modifier = Modifier
-        .alpha(if (isStarting) 0f else 1f)
-        ,verticalAlignment = Alignment.Bottom) {
+    Row(
+        modifier = Modifier
+            .alpha(if (isStarting) 0f else 1f), verticalAlignment = Alignment.Bottom
+    ) {
         Text(
             String.format(Locale.US, "%02d:%02d", remaining / 60, remaining % 60),
             style = Font.XLarge,
@@ -1629,7 +1354,7 @@ fun MenuManageScreen(
                     fontWeight = FontWeight.Bold,
                     color = DarkTextColor
                 )
-                Spacer(modifier = Modifier.height(Dimens.Medium))
+                Spacer(modifier = Modifier.height(Dimens.Small))
                 if (menu.steps.isEmpty()) {
                     Text(text = stringResource(id = R.string.msg_no_steps), color = Color.Gray)
                 } else {
@@ -1654,7 +1379,7 @@ fun MenuManageScreen(
                                             .size(Dimens.Medium)
                                             .background(step.color, shape = CircleShape)
                                     )
-                                    Spacer(modifier = Modifier.width(Dimens.Medium))
+                                    Spacer(modifier = Modifier.width(Dimens.Small))
                                     Text(
                                         step.name,
                                         modifier = Modifier.weight(1f),
@@ -1700,7 +1425,7 @@ fun MenuManageScreen(
                         color = Color.White
                     )
                 }
-                Spacer(modifier = Modifier.height(Dimens.Medium))
+                Spacer(modifier = Modifier.height(Dimens.Small))
 // 2. 【編集・削除ボタン】 管理用なので横並びで配置
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -1725,7 +1450,7 @@ fun MenuManageScreen(
                         Text(text = stringResource(id = R.string.btn_delete), color = Color.White)
                     }
                 }
-                Spacer(modifier = Modifier.height(Dimens.Medium))
+                Spacer(modifier = Modifier.height(Dimens.Small))
 // 3. 【シェアボタン】 優先度を下げて下に配置（サイズは標準）
                 Button(
                     onClick = {
@@ -1743,7 +1468,7 @@ fun MenuManageScreen(
                 ) {
                     Text(text = stringResource(id = R.string.btn_share_menu), color = Color.White)
                 }
-                Spacer(modifier = Modifier.height(Dimens.Medium))
+                Spacer(modifier = Modifier.height(Dimens.Small))
                 Button(
                     onClick = onBack,
                     modifier = Modifier
@@ -1756,12 +1481,19 @@ fun MenuManageScreen(
             }
         }
     } else {
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .background(DarkBackgroundColor)
-            .padding(Dimens.Medium)) {
-            Text(menu.name, style = Font.XLarge, fontWeight = FontWeight.Bold, color = DarkTextColor)
-            Spacer(modifier = Modifier.height(Dimens.Medium))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(DarkBackgroundColor)
+                .padding(Dimens.Medium)
+        ) {
+            Text(
+                menu.name,
+                style = Font.XLarge,
+                fontWeight = FontWeight.Bold,
+                color = DarkTextColor
+            )
+            Spacer(modifier = Modifier.height(Dimens.Small))
 
             // ステップ一覧（ここは変更なし）
             if (menu.steps.isEmpty()) {
@@ -1784,7 +1516,7 @@ fun MenuManageScreen(
                                         .size(Dimens.Medium)
                                         .background(step.color, shape = CircleShape)
                                 )
-                                Spacer(modifier = Modifier.width(Dimens.Medium))
+                                Spacer(modifier = Modifier.width(Dimens.Small))
                                 Text(
                                     step.name,
                                     modifier = Modifier.weight(1f),
@@ -1826,7 +1558,7 @@ fun MenuManageScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(Dimens.Medium))
+            Spacer(modifier = Modifier.height(Dimens.Small))
 
             // 2. 【編集・削除ボタン】 管理用なので横並びで配置
             Row(
@@ -1853,7 +1585,7 @@ fun MenuManageScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(Dimens.Medium))
+            Spacer(modifier = Modifier.height(Dimens.Small))
 
             // 3. 【シェアボタン】 優先度を下げて下に配置（サイズは標準）
             Button(
@@ -1872,7 +1604,7 @@ fun MenuManageScreen(
             ) {
                 Text(text = stringResource(id = R.string.btn_share_menu), color = Color.White)
             }
-            Spacer(modifier = Modifier.height(Dimens.Medium))
+            Spacer(modifier = Modifier.height(Dimens.Small))
             Button(
                 onClick = onBack,
                 modifier = Modifier
@@ -1912,7 +1644,7 @@ fun MenuListScreen(
                 fontWeight = FontWeight.Bold,
                 color = DarkTextColor
             )
-            Spacer(modifier = Modifier.height(Dimens.Medium))
+            Spacer(modifier = Modifier.height(Dimens.Small))
 
             val invalidDataMessage = stringResource(R.string.err_invalid_data)
             val errorFormatMessage = stringResource(R.string.err_format_error)
@@ -1951,7 +1683,7 @@ fun MenuListScreen(
                 Text(text = stringResource(id = R.string.btn_import_clipboard), color = Color.White)
             }
 
-            Spacer(modifier = Modifier.height(Dimens.Medium))
+            Spacer(modifier = Modifier.height(Dimens.Small))
 
             LazyColumn(
                 modifier = Modifier
@@ -1968,7 +1700,8 @@ fun MenuListScreen(
                     ) {
                         Row(
                             modifier = Modifier
-                                .padding(Dimens.Medium), verticalAlignment = Alignment.CenterVertically
+                                .padding(Dimens.Medium),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
                                 menu.name,
@@ -1990,7 +1723,7 @@ fun MenuListScreen(
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(Dimens.Medium))
+            Spacer(modifier = Modifier.height(Dimens.Small))
             Button(
                 onClick = onBack,
                 modifier = Modifier
