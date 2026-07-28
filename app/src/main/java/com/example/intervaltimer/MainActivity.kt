@@ -226,7 +226,7 @@ class MainActivity : ComponentActivity() {
                                     LaunchedEffect(Unit) { navController.popBackStack() }
                                 }
                             }
-                             composable("running/{menuIndex}") { backStackEntry ->
+                            composable("running/{menuIndex}") { backStackEntry ->
                                 val index =
                                     backStackEntry.arguments?.getString("menuIndex")?.toIntOrNull()
                                         ?: 0
@@ -870,8 +870,6 @@ fun PresetEditScreen(presetNames: SnapshotStateList<String>) {
 
 @Composable
 fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
-
-
     var currentStepIndex by rememberSaveable { mutableIntStateOf(0) }
     var remainingTime by rememberSaveable {
         mutableIntStateOf(
@@ -1027,185 +1025,52 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .fillMaxSize()
             ) {
-                ProgressBar(totalRemainingSeconds, totalMenuSeconds, isStarting)
-                Spacer(modifier = Modifier.height(Dimens.Small))
-                RemainingTime(totalRemainingSeconds, totalMenuSeconds, isStarting)
-                Spacer(modifier = Modifier.height(Dimens.Small))
 
-                val step: TimerStep = steps.getOrNull(currentStepIndex) ?: return
-                var isPulse by remember { mutableStateOf(false) }
-                val tempoInterval =
-                    remember(step.tempo) { if (step.tempo > 0) (60000 / step.tempo).toLong() else 0L }
-                val currentRemainingTime by rememberUpdatedState(remainingTime)
-                if (isRunning && tempoInterval > 0L) {
-                    LaunchedEffect(step.tempo, true) {
-                        val toneG = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
-                        try {
-                            var nextTick = System.currentTimeMillis()
-                            while (isActive) {
-                                if (!isRunning || currentRemainingTime <= 3) {
-                                    delay(100L.milliseconds)
-                                    nextTick = System.currentTimeMillis()
-                                    continue
-                                }
-                                nextTick += tempoInterval
-                                isPulse = true
-                                toneG.startTone(ToneGenerator.TONE_PROP_BEEP, 40)
-                                delay(60L.milliseconds)
-                                isPulse = false
-                                val wait = nextTick - System.currentTimeMillis()
-                                if (wait > 0) {
-                                    delay(wait.milliseconds)
-                                }
-                            }
-                        } finally {
-                            toneG.release()
-                        }
-                    }
-                }
-                val baseColor = step.color
-                val animatedColor by animateColorAsState(
-                    targetValue = if (isPulse) baseColor.copy(alpha = 1.0f) else baseColor.copy(
-                        alpha = 0.4f
-                    ),
-                    animationSpec = tween(durationMillis = 50, easing = LinearEasing),
-                    label = "Pulse"
+                // ①進捗
+                ProgressSection(
+                    remaining = totalRemainingSeconds,
+                    total = totalMenuSeconds,
+                    isStarting = isStarting
                 )
-                val contentColor = if (baseColor.luminance() > 0.5f) Color.Black else Color.White
-                Card(
-                    modifier = Modifier,
-                    colors = CardDefaults.cardColors(containerColor = animatedColor),
-                    elevation = CardDefaults.cardElevation(defaultElevation = Dimens.Small)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = Dimens.Medium, horizontal = Dimens.Small),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            step.name,
-                            style = Font.XLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = contentColor
-                        )
-                        Spacer(modifier = Modifier.height(Dimens.Small))
-                        Text(
-                            "${step.tempo} RPM",
-                            style = Font.XXLarge,
-                            fontWeight = FontWeight.Black,
-                            color = contentColor
-                        )
-                        Spacer(modifier = Modifier.height(Dimens.Small))
-                        val minutes = step.durationSeconds / 60
-                        val seconds = step.durationSeconds % 60
-                        val remainingTimeMinutes = remainingTime / 60
-                        val remainingTimeSeconds = remainingTime % 60
-                        var dynamicFontSize by remember { mutableStateOf(42.sp) }
-                        Text(
-                            text = String.format(
-                                Locale.US,
-                                "%02d:%02d / %02d:%02d",
-                                remainingTimeMinutes,
-                                remainingTimeSeconds,
-                                minutes,
-                                seconds
-                            ),
-                            fontSize = dynamicFontSize,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = contentColor,
-                            maxLines = 1,
-                            softWrap = false,
-                            onTextLayout = { result ->
-                                if (result.didOverflowWidth && dynamicFontSize > 24.sp) {
-                                    dynamicFontSize *= 0.9f
-                                }
-                            }
-                        )
-                    }
-//            Spacer(modifier = Modifier.size(Dimens.XXXLarge))
-//            Spacer(modifier = Modifier.width(Dimens.Medium))
 
-                }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    val playButtonColor = if (isRunning) DarkSurfaceColor else Color(0xFFE57373)
-                    val iconPlay = if (isRunning) Icons.Default.Pause else Icons.Default.PlayArrow
-                    val iconNext = Icons.Filled.SkipNext
-                    Box(
-                        modifier = Modifier.weight(1f),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        // ダミー
-                    }
-                    Box(
-                        modifier = Modifier.weight(1f),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Button(
-                            onClick = { isRunning = !isRunning },
-                            modifier = Modifier.size(Dimens.PlayCircle),
-                            shape = CircleShape,
-                            colors = ButtonDefaults.buttonColors(containerColor = playButtonColor),
-                            contentPadding = PaddingValues(Dimens.Zero)
-                        ) {
-                            Icon(
-                                imageVector = iconPlay,
-                                contentDescription = null,
-                                modifier = Modifier.size(Dimens.Icon),
-                                tint = Color.White
-                            )
+                // ②現在のメニュー
+                CurrentStepSection(
+                    modifier = Modifier.weight(3f),
+                    currentStepIndex = currentStepIndex,
+                    isStarting = isStarting,
+                    isRunning = isRunning,
+                    steps = steps,
+                    remainingTime = remainingTime,
+                )
+
+                // ③操作ボタン
+                ActionSection(
+                    modifier = Modifier,
+                    isStarting = isStarting,
+                    isRunning = isRunning,
+                    onPlayPause = {
+                        isRunning = !isRunning
+                    },
+                    onNext = {
+                        if (currentStepIndex < steps.size - 1) {
+                            currentStepIndex++
+                            remainingTime = steps[currentStepIndex].durationSeconds
+                        } else {
+                            isFinished = true
+                            remainingTime = 0
                         }
                     }
-                    Box(
-                        modifier = Modifier.weight(1f),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Button(
-                            enabled = !isStarting,
-                            onClick = { navigateToNextStep() },
-                            modifier = Modifier
-                                .alpha(if (isStarting) 0f else 1f)
-                                .size(Dimens.SkipCircle)
-                                .offset(x = (-16).dp),
-                            shape = CircleShape,
-                            colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor),
-                            contentPadding = PaddingValues(Dimens.Zero)
-                        ) {
-                            Icon(
-                                imageVector = iconNext,
-                                contentDescription = null,
-                                modifier = Modifier.size(Dimens.Icon),
-                                tint = Color.White
-                            )
-                        }
-                    }
-                }
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    if (!isStarting) {
-                        val next1 = steps.getOrNull(currentStepIndex + 1)
-                        if (next1 != null) NextStepRow(
-                            step = next1,
-                            label = stringResource(id = R.string.label_next)
-                        ) else Spacer(modifier = Modifier)
-                        val next2 = steps.getOrNull(currentStepIndex + 2)
-                        if (next2 != null) NextStepRow(
-                            step = next2,
-                            label = stringResource(id = R.string.label_after_that)
-                        ) else Spacer(modifier = Modifier)
-                    } else {
-                        Spacer(modifier = Modifier.fillMaxSize())
-                    }
-                }
+                )
+
+                // ④次のメニュー
+                NextStepSection(
+                    modifier = Modifier.weight(3f),
+                    isStarting = isStarting,
+                    currentStepIndex = currentStepIndex,
+                    steps = steps
+                )
             }
         }
     }
@@ -1253,26 +1118,6 @@ fun FinishedScreen(onDone: () -> Unit) {
             }
         }
     }
-}
-
-
-@Composable
-fun ProgressBar(remaining: Int, total: Int, isStarting: Boolean) {
-    val progress =
-        if (total > 0) {
-            (total - remaining).toFloat() / total.toFloat()
-        } else {
-            0f
-        }
-    LinearProgressIndicator(
-        progress = { progress },
-        modifier = Modifier
-            .alpha(if (isStarting) 0f else 1f)
-            .height(Dimens.Medium)
-            .clip(CircleShape),
-        color = Color.Cyan,
-        trackColor = DarkSurfaceColor
-    )
 }
 
 @Composable
@@ -1376,7 +1221,13 @@ fun MenuManageScreen(
                     .background(DarkBackgroundColor)
                     .padding(horizontal = Dimens.Medium)
             ) {
-                MenuManageScreenContent2(menu,onNavigateToRunning,onNavigateToEdit,onDeleteMenu,onBack)
+                MenuManageScreenContent2(
+                    menu,
+                    onNavigateToRunning,
+                    onNavigateToEdit,
+                    onDeleteMenu,
+                    onBack
+                )
             }
         }
     } else {
@@ -1387,13 +1238,19 @@ fun MenuManageScreen(
                 .padding(Dimens.Medium)
         ) {
             MenuManageScreenContent1(menu)
-            MenuManageScreenContent2(menu,onNavigateToRunning,onNavigateToEdit,onDeleteMenu,onBack)
+            MenuManageScreenContent2(
+                menu,
+                onNavigateToRunning,
+                onNavigateToEdit,
+                onDeleteMenu,
+                onBack
+            )
         }
     }
 }
 
 @Composable
-fun ColumnScope.MenuManageScreenContent1(menu: TrainingMenu,){
+fun ColumnScope.MenuManageScreenContent1(menu: TrainingMenu) {
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     Text(
         menu.name,
@@ -1409,7 +1266,13 @@ fun ColumnScope.MenuManageScreenContent1(menu: TrainingMenu,){
             items(menu.steps) { step ->
                 Card(
                     modifier = Modifier
-                        .padding(vertical = if (isLandscape) {Dimens.Micro }else {Dimens.Tiny})
+                        .padding(
+                            vertical = if (isLandscape) {
+                                Dimens.Micro
+                            } else {
+                                Dimens.Tiny
+                            }
+                        )
                         .fillMaxWidth(),
                     colors = CardDefaults.cardColors(
                         containerColor = step.color.copy(
@@ -1418,7 +1281,13 @@ fun ColumnScope.MenuManageScreenContent1(menu: TrainingMenu,){
                     )
                 ) {
                     Row(
-                        modifier = Modifier.padding(if (isLandscape) {Dimens.Small}else{Dimens.Medium}),
+                        modifier = Modifier.padding(
+                            if (isLandscape) {
+                                Dimens.Small
+                            } else {
+                                Dimens.Medium
+                            }
+                        ),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Box(
@@ -1453,7 +1322,13 @@ fun ColumnScope.MenuManageScreenContent1(menu: TrainingMenu,){
 }
 
 @Composable
-fun MenuManageScreenContent2(menu: TrainingMenu,onNavigateToRunning: () -> Unit,onNavigateToEdit: () -> Unit,onDeleteMenu: () -> Unit,onBack: () -> Unit){
+fun MenuManageScreenContent2(
+    menu: TrainingMenu,
+    onNavigateToRunning: () -> Unit,
+    onNavigateToEdit: () -> Unit,
+    onDeleteMenu: () -> Unit,
+    onBack: () -> Unit
+) {
     val context = LocalContext.current
     val gson = remember { Gson() }
     val toastMessage = stringResource(id = R.string.msg_copied, menu.name)
@@ -1562,7 +1437,8 @@ fun MenuListScreen(
             val errorFormatMessage = stringResource(R.string.err_format_error)
             val successMessageBase = stringResource(id = R.string.msg_imported, "")
             val errClipboardEmptyMessage = stringResource(R.string.err_clipboard_empty)
-            val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+            val isLandscape =
+                LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
 
             Button(
                 onClick = {
@@ -1590,7 +1466,13 @@ fun MenuListScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(if (isLandscape) {Dimens.XLarge} else { Dimens.XXXLarge }),
+                    .height(
+                        if (isLandscape) {
+                            Dimens.XLarge
+                        } else {
+                            Dimens.XXXLarge
+                        }
+                    ),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF6C00))
             ) {
                 Text(text = stringResource(id = R.string.btn_import_clipboard), color = Color.White)
@@ -1606,14 +1488,26 @@ fun MenuListScreen(
                 itemsIndexed(menus) { index, menu ->
                     Card(
                         modifier = Modifier
-                            .padding(vertical = if (isLandscape) { Dimens.Micro} else {Dimens.Tiny})
+                            .padding(
+                                vertical = if (isLandscape) {
+                                    Dimens.Micro
+                                } else {
+                                    Dimens.Tiny
+                                }
+                            )
                             .fillMaxWidth()
                             .clickable { onSelectMenu(index) },
                         colors = CardDefaults.cardColors(containerColor = DarkSurfaceColor)
                     ) {
                         Row(
                             modifier = Modifier
-                                .padding(if (isLandscape) {Dimens.Tiny} else {Dimens.Small}),
+                                .padding(
+                                    if (isLandscape) {
+                                        Dimens.Tiny
+                                    } else {
+                                        Dimens.Small
+                                    }
+                                ),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
@@ -1687,3 +1581,242 @@ fun triggerStepVibration(context: Context, isEnd: Boolean) {
     }
 }
 
+@Composable
+private fun ProgressSection(
+    remaining: Int,
+    total: Int,
+    isStarting: Boolean
+) {
+    val progress =
+        if (total > 0) {
+            (total - remaining).toFloat() / total.toFloat()
+        } else {
+            0f
+        }
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        LinearProgressIndicator(
+            progress = { progress },
+            modifier = Modifier
+                .alpha(if (isStarting) 0f else 1f)
+                .height(Dimens.Medium)
+                .clip(CircleShape)
+                .fillMaxWidth(),
+            color = Color.Cyan,
+            trackColor = DarkSurfaceColor
+        )
+        Spacer(Modifier.height(Dimens.Small))
+        RemainingTime(
+            remaining = remaining,
+            total = total,
+            isStarting = isStarting
+        )
+    }
+}
+
+@Composable
+private fun CurrentStepSection(
+    modifier: Modifier = Modifier,
+    currentStepIndex: Int,
+    isStarting: Boolean,
+    isRunning: Boolean,
+    steps: List<TimerStep>,
+    remainingTime: Int
+) {
+    val step: TimerStep = steps.getOrNull(currentStepIndex) ?: return
+    var isPulse by remember { mutableStateOf(false) }
+    val tempoInterval =
+        remember(step.tempo) { if (step.tempo > 0) (60000 / step.tempo).toLong() else 0L }
+    val currentRemainingTime by rememberUpdatedState(remainingTime)
+    if (isRunning && tempoInterval > 0L) {
+        LaunchedEffect(step.tempo, true) {
+            val toneG = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
+            try {
+                var nextTick = System.currentTimeMillis()
+                while (isActive) {
+                    if (!isRunning || currentRemainingTime <= 3) {
+                        delay(100L.milliseconds)
+                        nextTick = System.currentTimeMillis()
+                        continue
+                    }
+                    nextTick += tempoInterval
+                    isPulse = true
+                    toneG.startTone(ToneGenerator.TONE_PROP_BEEP, 40)
+                    delay(60L.milliseconds)
+                    isPulse = false
+                    val wait = nextTick - System.currentTimeMillis()
+                    if (wait > 0) {
+                        delay(wait.milliseconds)
+                    }
+                }
+            } finally {
+                toneG.release()
+            }
+        }
+    }
+//色の計算
+    val baseColor = step.color
+    val animatedColor by animateColorAsState(
+        targetValue = if (isPulse) baseColor.copy(alpha = 1.0f) else baseColor.copy(
+            alpha = 0.4f
+        ),
+        animationSpec = tween(durationMillis = 50, easing = LinearEasing),
+        label = "Pulse"
+    )
+    val contentColor = if (baseColor.luminance() > 0.5f) Color.Black else Color.White
+    Spacer(Modifier.height(Dimens.Small))
+    Card(
+        modifier = modifier.alpha(if (isStarting) 0f else 1f),
+        colors = CardDefaults.cardColors(containerColor = animatedColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = Dimens.Small)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .padding(vertical = Dimens.Medium, horizontal = Dimens.Small),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                step.name,
+                style = Font.XLarge,
+                fontWeight = FontWeight.Bold,
+                color = contentColor
+            )
+            Spacer(modifier = Modifier.height(Dimens.Small))
+            Text(
+                "${step.tempo} RPM",
+                style = Font.XXLarge,
+                fontWeight = FontWeight.Black,
+                color = contentColor
+            )
+            Spacer(modifier = Modifier.height(Dimens.Small))
+//時間の計算
+            val minutes = step.durationSeconds / 60
+            val seconds = step.durationSeconds % 60
+            val remainingTimeMinutes = remainingTime / 60
+            val remainingTimeSeconds = remainingTime % 60
+            var dynamicFontSize by remember { mutableStateOf(42.sp) }
+            Text(
+                text = String.format(
+                    Locale.US,
+                    "%02d:%02d / %02d:%02d",
+                    remainingTimeMinutes,
+                    remainingTimeSeconds,
+                    minutes,
+                    seconds
+                ),
+                fontSize = dynamicFontSize,
+                fontWeight = FontWeight.ExtraBold,
+                color = contentColor,
+                maxLines = 1,
+                softWrap = false,
+                onTextLayout = { result ->
+                    if (result.didOverflowWidth && dynamicFontSize > 24.sp) {
+                        dynamicFontSize *= 0.9f
+                    }
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun ActionSection(
+    modifier: Modifier = Modifier,
+    isStarting: Boolean,
+    isRunning: Boolean,
+    onPlayPause: () -> Unit,
+    onNext: () -> Unit
+    ) {
+    Spacer(Modifier.height(Dimens.Small))
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier.fillMaxWidth()
+    ) {
+        val playButtonColor = if (isRunning) DarkSurfaceColor else Color(0xFFE57373)
+        val iconPlay = if (isRunning) Icons.Default.Pause else Icons.Default.PlayArrow
+        val iconNext = Icons.Filled.SkipNext
+
+        Box(
+            modifier = Modifier.weight(1f),
+            contentAlignment = Alignment.Center
+        ) {
+            // ダミー
+        }
+        Box(
+            modifier = modifier.weight(1f),
+            contentAlignment = Alignment.Center
+        ) {
+            Button(
+                onClick = onPlayPause,
+                modifier = Modifier.size(Dimens.PlayCircle),
+                shape = CircleShape,
+                colors = ButtonDefaults.buttonColors(containerColor = playButtonColor),
+                contentPadding = PaddingValues(Dimens.Zero)
+            ) {
+                Icon(
+                    imageVector = iconPlay,
+                    contentDescription = null,
+                    modifier = Modifier.size(Dimens.Icon),
+                    tint = Color.White
+                )
+            }
+        }
+        Box(
+            modifier = modifier.weight(1f),
+            contentAlignment = Alignment.Center
+        ) {
+            Button(
+                enabled = !isStarting,
+                onClick = onNext,
+                modifier = Modifier
+                    .alpha(if (isStarting) 0f else 1f)
+                    .size(Dimens.SkipCircle)
+                    .offset(x = (-16).dp),
+                shape = CircleShape,
+                colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor),
+                contentPadding = PaddingValues(Dimens.Zero)
+            ) {
+                Icon(
+                    imageVector = iconNext,
+                    contentDescription = null,
+                    modifier = Modifier.size(Dimens.Icon),
+                    tint = Color.White
+                )
+            }
+        }
+        Spacer(Modifier.height(Dimens.Small))
+    }
+}
+
+@Composable
+private fun NextStepSection(
+    modifier: Modifier = Modifier,
+    isStarting: Boolean,
+    steps: List<TimerStep>,
+    currentStepIndex: Int
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        if (!isStarting) {
+            val next1 = steps.getOrNull(currentStepIndex + 1)
+            if (next1 != null) NextStepRow(
+                step = next1,
+                label = stringResource(id = R.string.label_next)
+            ) else Spacer(Modifier.height(Dimens.Small))
+            val next2 = steps.getOrNull(currentStepIndex + 2)
+            if (next2 != null) NextStepRow(
+                step = next2,
+                label = stringResource(id = R.string.label_after_that)
+            ) else Spacer(Modifier.height(Dimens.Small))
+        } else {
+            Spacer(modifier = Modifier.fillMaxSize())
+        }
+    }
+}
