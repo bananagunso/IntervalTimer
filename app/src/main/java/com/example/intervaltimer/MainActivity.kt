@@ -101,6 +101,11 @@ object Font {
         TextStyle(fontSize = 32.sp, lineHeight = 40.sp, fontWeight = FontWeight.Bold)
     val XXLarge: TextStyle =
         TextStyle(fontSize = 40.sp, lineHeight = 48.sp, fontWeight = FontWeight.Bold)
+    val XXXLarge: TextStyle =
+        TextStyle(fontSize = 56.sp, lineHeight = 64.sp, fontWeight = FontWeight.Bold)
+    val CountDown: TextStyle =
+        TextStyle(fontSize = 128.sp, lineHeight = 136.sp, fontWeight = FontWeight.Bold)
+
 }
 
 data class TimerStep(
@@ -1036,14 +1041,21 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                 )
 
                 // ②現在のメニュー
-                CurrentStepSection(
-                    modifier = Modifier.weight(3f),
-                    currentStepIndex = currentStepIndex,
-                    isStarting = isStarting,
-                    isRunning = isRunning,
-                    steps = steps,
-                    remainingTime = remainingTime,
-                )
+                if (isStarting) {
+                    CountdownSection(
+                        modifier = Modifier.weight(3f),
+                        count = startDelay
+                    )
+                } else {
+                    CurrentStepSection(
+                        modifier = Modifier.weight(3f),
+                        currentStepIndex = currentStepIndex,
+                        isStarting = isStarting,
+                        isRunning = isRunning,
+                        steps = steps,
+                        remainingTime = remainingTime,
+                    )
+                }
 
                 // ③操作ボタン
                 ActionSection(
@@ -1667,8 +1679,13 @@ private fun CurrentStepSection(
     )
     val contentColor = if (baseColor.luminance() > 0.5f) Color.Black else Color.White
     Spacer(Modifier.height(Dimens.Small))
+    val alpha by animateFloatAsState(
+        targetValue = if (isStarting) 0f else 1f,
+        animationSpec = tween(300),
+        label = "CardAlpha"
+    )
     Card(
-        modifier = modifier.alpha(if (isStarting) 0f else 1f),
+        modifier = modifier.alpha(alpha),
         colors = CardDefaults.cardColors(containerColor = animatedColor),
         elevation = CardDefaults.cardElevation(defaultElevation = Dimens.Small)
     ) {
@@ -1682,14 +1699,14 @@ private fun CurrentStepSection(
         ) {
             Text(
                 step.name,
-                style = Font.XLarge,
+                style = Font.XXXLarge,
                 fontWeight = FontWeight.Bold,
                 color = contentColor
             )
             Spacer(modifier = Modifier.height(Dimens.Small))
             Text(
                 "${step.tempo} RPM",
-                style = Font.XXLarge,
+                style = Font.XXXLarge,
                 fontWeight = FontWeight.Black,
                 color = contentColor
             )
@@ -1709,7 +1726,7 @@ private fun CurrentStepSection(
                     minutes,
                     seconds
                 ),
-                fontSize = dynamicFontSize,
+                style = Font.XXXLarge,
                 fontWeight = FontWeight.ExtraBold,
                 color = contentColor,
                 maxLines = 1,
@@ -1731,7 +1748,7 @@ private fun ActionSection(
     isRunning: Boolean,
     onPlayPause: () -> Unit,
     onNext: () -> Unit
-    ) {
+) {
     Spacer(Modifier.height(Dimens.Small))
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -1818,5 +1835,23 @@ private fun NextStepSection(
         } else {
             Spacer(modifier = Modifier.fillMaxSize())
         }
+    }
+}
+
+@Composable
+private fun CountdownSection(
+    modifier: Modifier = Modifier,
+    count: Int
+) {
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = count.toString(),
+            style = Font.CountDown,
+            fontWeight = FontWeight.Black,
+            color = Color.White
+        )
     }
 }
