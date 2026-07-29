@@ -59,7 +59,6 @@ import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalConfiguration
@@ -67,7 +66,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlin.time.Duration.Companion.milliseconds
 import androidx.compose.ui.text.TextStyle
-import com.example.intervaltimer.TrainingMenu
 
 object Dimens {
     val Zero = 0.dp
@@ -237,7 +235,7 @@ class MainActivity : ComponentActivity() {
                                         ?: 0
                                 RunningScreen(
                                     steps = allSavedMenus[index].steps,
-                                    onFinish = { navController.popBackStack() }
+                                    onBackToMenu = { navController.popBackStack() }
                                 )
                             }
                             composable("add_menu/{menuIndex}") { backStackEntry ->
@@ -874,7 +872,7 @@ fun PresetEditScreen(presetNames: SnapshotStateList<String>) {
 }
 
 @Composable
-fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
+fun RunningScreen(steps: List<TimerStep>, onBackToMenu: () -> Unit) {
     var currentStepIndex by rememberSaveable { mutableIntStateOf(0) }
     var remainingTime by rememberSaveable {
         mutableIntStateOf(
@@ -929,22 +927,8 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
     }
 
 // 1. 状態管理変数
-    var hasFinishedTriggered by rememberSaveable { mutableStateOf(false) }
     var isFirstComposition by rememberSaveable { mutableStateOf(true) } // 回転時の誤爆防止
     var lastProcessedIndex by rememberSaveable { mutableIntStateOf(-1) }
-
-// 2. 終了画面処理
-    if (isFinished) {
-        LaunchedEffect(Unit) {
-            if (!hasFinishedTriggered) {
-                triggerStepVibration(context, isEnd = true)
-                playTone("switch")
-                hasFinishedTriggered = true
-            }
-        }
-        FinishedScreen(onDone = onFinish)
-        return
-    }
 
 // 3. カウントダウン通知（1-3秒）
     LaunchedEffect(remainingTime) {
@@ -1033,18 +1017,23 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                     .fillMaxSize()
             ) {
 
-                // ①進捗
-                ProgressSection(
-                    remaining = totalRemainingSeconds,
-                    total = totalMenuSeconds,
-                    isStarting = isStarting
-                )
+                //全体の進捗
+                if (!isStarting && !isFinished) {
+                    ProgressSection(
+                        remaining = totalRemainingSeconds,
+                        total = totalMenuSeconds
+                    )
+                }
 
-                // ②現在のメニュー
+                //現在のメニュー、大きなセクション
                 if (isStarting) {
                     CountdownSection(
                         modifier = Modifier.weight(3f),
                         count = startDelay
+                    )
+                } else if (isFinished) {
+                    FinishSection(
+                        modifier = Modifier.weight(3f)
                     )
                 } else {
                     CurrentStepSection(
@@ -1057,26 +1046,36 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
                     )
                 }
 
-                // ③操作ボタン
-                ActionSection(
-                    modifier = Modifier,
-                    isStarting = isStarting,
-                    isRunning = isRunning,
-                    onPlayPause = {
-                        isRunning = !isRunning
-                    },
-                    onNext = {
-                        if (currentStepIndex < steps.size - 1) {
-                            currentStepIndex++
-                            remainingTime = steps[currentStepIndex].durationSeconds
-                        } else {
-                            isFinished = true
-                            remainingTime = 0
+                //終了時のチェックマーク
+                if (isFinished) {
+                    FinishButtonSection(
+                        modifier = Modifier.weight(3f),
+                        onFinishClick = {
+                            onBackToMenu()
                         }
-                    }
-                )
+                    )
+                //操作ボタン
+                } else {
+                    ActionSection(
+                        modifier = Modifier,
+                        isStarting = isStarting,
+                        isRunning = isRunning,
+                        onPlayPause = {
+                            isRunning = !isRunning
+                        },
+                        onNext = {
+                            if (currentStepIndex < steps.size - 1) {
+                                currentStepIndex++
+                                remainingTime = steps[currentStepIndex].durationSeconds
+                            } else {
+                                isFinished = true
+                                remainingTime = 0
+                            }
+                        }
+                    )
+                }
 
-                // ④次のメニュー
+                //次のメニュー
                 NextStepSection(
                     modifier = Modifier.weight(3f),
                     isStarting = isStarting,
@@ -1089,61 +1088,19 @@ fun RunningScreen(steps: List<TimerStep>, onFinish: () -> Unit) {
 }
 
 @Composable
-fun FinishedScreen(onDone: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(DarkBackgroundColor),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment
-                .CenterHorizontally
-        ) {
-            Text(
-                text = stringResource(id = R.string.finished_message),
-                style = Font.XLarge,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-            Spacer(modifier = Modifier.height(Dimens.Medium))
-            Icon(
-                Icons.Default.CheckCircle,
-                contentDescription = null,
-                modifier = Modifier.size(Dimens.PlayCircle),
-                tint = Color(0xFF81C784)
-            )
-            Spacer(modifier = Modifier.height(Dimens.XXLarge))
-            Button(
-                onClick = onDone,
-                modifier = Modifier
-                    .fillMaxWidth(0.6f)
-                    .height(Dimens.XXXLarge),
-                colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceColor)
-            ) {
-                Text(
-                    text = stringResource(id = R.string.btn_back),
-                    style = Font.Medium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun RemainingTime(remaining: Int, total: Int, isStarting: Boolean) {
+fun RemainingTime(
+    remaining: Int,
+    total: Int
+) {
     Text(
-        modifier = Modifier.alpha(if (isStarting) 0f else 1f),
         text = stringResource(id = R.string.label_total_remaining),
         style = Font.Micro,
         color = Color.Gray,
         fontWeight = FontWeight.Bold
     )
     Row(
-        modifier = Modifier
-            .alpha(if (isStarting) 0f else 1f), verticalAlignment = Alignment.Bottom
+        modifier = Modifier,
+        verticalAlignment = Alignment.Bottom
     ) {
         Text(
             String.format(Locale.US, "%02d:%02d", remaining / 60, remaining % 60),
@@ -1206,10 +1163,6 @@ fun MenuManageScreen(
     onDeleteMenu: () -> Unit,
     onBack: () -> Unit
 ) {
-//    val context = LocalContext.current
-//    val gson = remember { Gson() }
-//    val toastMessage = stringResource(id = R.string.msg_copied, menu.name)
-
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     if (isLandscape) {
         Row(
@@ -1597,7 +1550,6 @@ fun triggerStepVibration(context: Context, isEnd: Boolean) {
 private fun ProgressSection(
     remaining: Int,
     total: Int,
-    isStarting: Boolean
 ) {
     val progress =
         if (total > 0) {
@@ -1612,7 +1564,6 @@ private fun ProgressSection(
         LinearProgressIndicator(
             progress = { progress },
             modifier = Modifier
-                .alpha(if (isStarting) 0f else 1f)
                 .height(Dimens.Medium)
                 .clip(CircleShape)
                 .fillMaxWidth(),
@@ -1623,7 +1574,6 @@ private fun ProgressSection(
         RemainingTime(
             remaining = remaining,
             total = total,
-            isStarting = isStarting
         )
     }
 }
@@ -1680,7 +1630,7 @@ private fun CurrentStepSection(
     val contentColor = if (baseColor.luminance() > 0.5f) Color.Black else Color.White
     Spacer(Modifier.height(Dimens.Small))
     val alpha by animateFloatAsState(
-        targetValue = if (isStarting) 0f else 1f,
+        targetValue = if (isStarting ) 0f else 1f,
         animationSpec = tween(300),
         label = "CardAlpha"
     )
@@ -1699,7 +1649,7 @@ private fun CurrentStepSection(
         ) {
             Text(
                 step.name,
-                style = Font.XXXLarge,
+                style = Font.XXLarge,
                 fontWeight = FontWeight.Bold,
                 color = contentColor
             )
@@ -1806,8 +1756,8 @@ private fun ActionSection(
                 )
             }
         }
-        Spacer(Modifier.height(Dimens.Small))
     }
+    Spacer(Modifier.height(Dimens.Small))
 }
 
 @Composable
@@ -1847,11 +1797,81 @@ private fun CountdownSection(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = stringResource(id = R.string.label_preparing),
+                style = Font.XXLarge,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+            Text(
+                text = count.toString(),
+                style = Font.CountDown,
+                fontWeight = FontWeight.Black,
+                color = Color.White
+            )
+        }
+    }
+}
+
+@Composable
+private fun FinishSection(
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.BottomCenter
+    ) {
         Text(
-            text = count.toString(),
-            style = Font.CountDown,
-            fontWeight = FontWeight.Black,
+            text = stringResource(id = R.string.finished_message),
+            style = Font.XXXLarge,
+            fontWeight = FontWeight.Bold,
             color = Color.White
         )
+    }
+}
+
+@Composable
+private fun FinishButtonSection(
+    modifier: Modifier = Modifier,
+    onFinishClick: () -> Unit
+) {
+    Box(
+        modifier = modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = Icons.Default.CheckCircle,
+                contentDescription = null,
+                modifier = Modifier.size(Dimens.PlayCircle),
+                tint = Color(0xFF81C784)
+            )
+
+            Spacer(
+                modifier = Modifier.height(Dimens.XXLarge)
+            )
+
+            Button(
+                onClick = onFinishClick,
+                modifier = Modifier
+                    .fillMaxWidth(0.6f)
+                    .height(Dimens.XXXLarge),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = DarkSurfaceColor
+                )
+            ) {
+                Text(
+                    text = stringResource(id = R.string.btn_back),
+                    style = Font.Medium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
+        }
     }
 }
