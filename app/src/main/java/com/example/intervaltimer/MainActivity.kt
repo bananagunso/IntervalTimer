@@ -989,102 +989,163 @@ fun RunningScreen(steps: List<TimerStep>, onBackToMenu: () -> Unit) {
 
 //ここから表示
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-    if (isLandscape) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(DarkBackgroundColor)
-                .padding(horizontal = Dimens.Large),
-            verticalAlignment = Alignment.Bottom
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth(0.5f)
-                    .background(DarkBackgroundColor)
-                    .padding(horizontal = Dimens.Medium),
-            ) {
-
-            }
-        }
-    } else {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(DarkBackgroundColor)
-        ) {
-            Column(
+    /*    if (isLandscape) {
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
+                    .background(DarkBackgroundColor)
             ) {
-
-                //全体の進捗
-                if (!isStarting && !isFinished) {
-                    ProgressSection(
-                        remaining = totalRemainingSeconds,
-                        total = totalMenuSeconds
-                    )
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
+                    //全体の進捗
+                    if (!isStarting && !isFinished) {
+                        ProgressSection(
+                            remaining = totalRemainingSeconds,
+                            total = totalMenuSeconds
+                        )
+                    }
                 }
+            }
+        } else {*/
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(DarkBackgroundColor)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
 
-                //現在のメニュー、大きなセクション
-                if (isStarting) {
-                    CountdownSection(
-                        modifier = Modifier.weight(3f),
-                        count = startDelay
-                    )
-                } else if (isFinished) {
-                    FinishSection(
-                        modifier = Modifier.weight(3f)
-                    )
-                } else {
-                    CurrentStepSection(
-                        modifier = Modifier.weight(3f),
-                        currentStepIndex = currentStepIndex,
-                        isStarting = isStarting,
-                        isRunning = isRunning,
-                        steps = steps,
-                        remainingTime = remainingTime,
-                    )
-                }
-
-                //終了時のチェックマーク
-                if (isFinished) {
-                    FinishButtonSection(
-                        modifier = Modifier.weight(3f),
-                        onFinishClick = {
-                            onBackToMenu()
-                        }
-                    )
-                //操作ボタン
-                } else {
-                    ActionSection(
-                        modifier = Modifier,
-                        isStarting = isStarting,
-                        isRunning = isRunning,
-                        onPlayPause = {
-                            isRunning = !isRunning
-                        },
-                        onNext = {
-                            if (currentStepIndex < steps.size - 1) {
-                                currentStepIndex++
-                                remainingTime = steps[currentStepIndex].durationSeconds
-                            } else {
-                                isFinished = true
-                                remainingTime = 0
-                            }
-                        }
-                    )
-                }
-
-                //次のメニュー
-                NextStepSection(
+//トレーニング中
+            if (!isStarting && !isFinished) {
+                ProgressSection(
+                    remaining = totalRemainingSeconds,
+                    total = totalMenuSeconds
+                )
+                CurrentStepSection(
                     modifier = Modifier.weight(3f),
-                    isStarting = isStarting,
                     currentStepIndex = currentStepIndex,
-                    steps = steps
+                    isStarting = isStarting,
+                    isRunning = isRunning,
+                    steps = steps,
+                    remainingTime = remainingTime,
                 )
             }
+
+//最初のカウントダウン
+            if (isStarting && isRunning && !isFinished) {
+                CountdownSection(
+                    modifier = Modifier.weight(3f),
+                    count = startDelay
+                )
+            }
+
+
+            if (!isStarting && !isRunning && isFinished) {
+                FinishSection(
+                    modifier = Modifier.weight(3f)
+                )
+                FinishButtonSection(
+                    modifier = Modifier.weight(3f),
+                    onFinishClick = {
+                        onBackToMenu()
+                    }
+                )
+            }
+
+            ActionSection(
+                modifier = Modifier,
+                isStarting = isStarting,
+                isRunning = isRunning,
+                onPlayPause = {
+                    isRunning = !isRunning
+                },
+                onNext = {
+                    if (currentStepIndex < steps.size - 1) {
+                        currentStepIndex++
+                        remainingTime = steps[currentStepIndex].durationSeconds
+                    } else {
+                        isFinished = true
+                        remainingTime = 0
+                    }
+                }
+            )
+
+
+            /*
+                                //全体の進捗
+                            if (!isStarting && !isFinished) {
+                                ProgressSection(
+                                    remaining = totalRemainingSeconds,
+                                    total = totalMenuSeconds
+                                )
+                            }
+
+                            //現在のメニュー、大きなセクション
+                            if (isStarting) {
+                                CountdownSection(
+                                    modifier = Modifier.weight(3f),
+                                    count = startDelay
+                                )
+                            } else if (isFinished) {
+                                FinishSection(
+                                    modifier = Modifier.weight(3f)
+                                )
+                            } else {
+                                CurrentStepSection(
+                                    modifier = Modifier.weight(3f),
+                                    currentStepIndex = currentStepIndex,
+                                    isStarting = isStarting,
+                                    isRunning = isRunning,
+                                    steps = steps,
+                                    remainingTime = remainingTime,
+                                )
+                            }
+
+                            //終了時のチェックマーク
+                            if (isFinished) {
+                                FinishButtonSection(
+                                    modifier = Modifier.weight(3f),
+                                    onFinishClick = {
+                                        onBackToMenu()
+                                    }
+                                )
+                            //操作ボタン
+                            } else {
+                                ActionSection(
+                                    modifier = Modifier,
+                                    isStarting = isStarting,
+                                    isRunning = isRunning,
+                                    onPlayPause = {
+                                        isRunning = !isRunning
+                                    },
+                                    onNext = {
+                                        if (currentStepIndex < steps.size - 1) {
+                                            currentStepIndex++
+                                            remainingTime = steps[currentStepIndex].durationSeconds
+                                        } else {
+                                            isFinished = true
+                                            remainingTime = 0
+                                        }
+                                    }
+                                )
+                            }
+
+                            //次のメニュー
+                            NextStepSection(
+                                modifier = Modifier.weight(3f),
+                                isStarting = isStarting,
+                                currentStepIndex = currentStepIndex,
+                                steps = steps
+                            )
+
+             */
         }
     }
+//    }
 }
 
 @Composable
@@ -1630,7 +1691,7 @@ private fun CurrentStepSection(
     val contentColor = if (baseColor.luminance() > 0.5f) Color.Black else Color.White
     Spacer(Modifier.height(Dimens.Small))
     val alpha by animateFloatAsState(
-        targetValue = if (isStarting ) 0f else 1f,
+        targetValue = if (isStarting) 0f else 1f,
         animationSpec = tween(300),
         label = "CardAlpha"
     )
