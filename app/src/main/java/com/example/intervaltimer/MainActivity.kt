@@ -38,7 +38,6 @@ import android.media.AudioManager
 import android.media.ToneGenerator
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import android.app.Activity
 import android.view.WindowManager
@@ -59,6 +58,7 @@ import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalConfiguration
@@ -66,6 +66,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlin.time.Duration.Companion.milliseconds
 import androidx.compose.ui.text.TextStyle
+import kotlin.Boolean
 
 object Dimens {
     val Zero = 0.dp
@@ -989,112 +990,72 @@ fun RunningScreen(steps: List<TimerStep>, onBackToMenu: () -> Unit) {
 
 //ここから表示
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-    /*    if (isLandscape) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(DarkBackgroundColor)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
-                    //全体の進捗
-                    if (!isStarting && !isFinished) {
-                        ProgressSection(
-                            remaining = totalRemainingSeconds,
-                            total = totalMenuSeconds
-                        )
-                    }
-                }
-            }
-        } else {*/
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(DarkBackgroundColor)
-    ) {
-        Column(
+    if (isLandscape) {
+        Box(
             modifier = Modifier
                 .fillMaxSize()
+                .background(DarkBackgroundColor)
         ) {
-
-//トレーニング中
-            if (!isStarting && !isFinished) {
-                ProgressSection(
-                    remaining = totalRemainingSeconds,
-                    total = totalMenuSeconds
-                )
-                CurrentStepSection(
-                    modifier = Modifier.weight(3f),
-                    currentStepIndex = currentStepIndex,
-                    isStarting = isStarting,
-                    isRunning = isRunning,
-                    steps = steps,
-                    remainingTime = remainingTime,
-                )
-            }
-
-//最初のカウントダウン
-            if (isStarting && isRunning && !isFinished) {
-                CountdownSection(
-                    modifier = Modifier.weight(3f),
-                    count = startDelay
-                )
-            }
-
-
-            if (!isStarting && !isRunning && isFinished) {
-                FinishSection(
-                    modifier = Modifier.weight(3f)
-                )
-                FinishButtonSection(
-                    modifier = Modifier.weight(3f),
-                    onFinishClick = {
-                        onBackToMenu()
-                    }
-                )
-            }
-
-            ActionSection(
-                modifier = Modifier,
-                isStarting = isStarting,
-                isRunning = isRunning,
-                onPlayPause = {
-                    isRunning = !isRunning
-                },
-                onNext = {
-                    if (currentStepIndex < steps.size - 1) {
-                        currentStepIndex++
-                        remainingTime = steps[currentStepIndex].durationSeconds
-                    } else {
-                        isFinished = true
-                        remainingTime = 0
-                    }
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                //全体の進捗
+                if (!isStarting && !isFinished) {
+                    ProgressSection(
+                        remaining = totalRemainingSeconds,
+                        total = totalMenuSeconds,
+                        isLandscape = true
+                    )
                 }
-            )
-
-
-            /*
-                                //全体の進捗
-                            if (!isStarting && !isFinished) {
-                                ProgressSection(
-                                    remaining = totalRemainingSeconds,
-                                    total = totalMenuSeconds
-                                )
-                            }
-
-                            //現在のメニュー、大きなセクション
-                            if (isStarting) {
-                                CountdownSection(
-                                    modifier = Modifier.weight(3f),
-                                    count = startDelay
-                                )
-                            } else if (isFinished) {
-                                FinishSection(
-                                    modifier = Modifier.weight(3f)
-                                )
+                if (isStarting) {
+                    CountdownSection(
+                        modifier = Modifier.weight(3f),
+                        count = startDelay
+                    )
+                    ActionSection(
+                        modifier = Modifier,
+                        isStarting = isStarting,
+                        isRunning = isRunning,
+                        onPlayPause = {
+                            isRunning = !isRunning
+                        },
+                        onNext = {
+                            if (currentStepIndex < steps.size - 1) {
+                                currentStepIndex++
+                                remainingTime = steps[currentStepIndex].durationSeconds
                             } else {
+                                isFinished = true
+                                remainingTime = 0
+                            }
+                        }
+                    )
+
+                } else if (isFinished) {
+                    FinishSection(
+                        modifier = Modifier.weight(3f),
+                        isLandscape = true
+                    )
+                    FinishButtonSection(
+                        modifier = Modifier.weight(3f),
+                        onFinishClick = {
+                            onBackToMenu()
+                        }
+                    )
+                } else {
+
+                    Row(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.Medium)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                        ) {
+                            // 左半分
+                            //現在のメニュー、大きなセクション
+                            if (!isStarting && !isFinished) {
                                 CurrentStepSection(
                                     modifier = Modifier.weight(3f),
                                     currentStepIndex = currentStepIndex,
@@ -1104,16 +1065,24 @@ fun RunningScreen(steps: List<TimerStep>, onBackToMenu: () -> Unit) {
                                     remainingTime = remainingTime,
                                 )
                             }
-
+                        }
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                        ) {
+                            // 右半分
+                            //次のメニュー
+                            NextStepSection(
+                                modifier = Modifier.weight(3f),
+                                isStarting = isStarting,
+                                currentStepIndex = currentStepIndex,
+                                steps = steps
+                            )
                             //終了時のチェックマーク
                             if (isFinished) {
-                                FinishButtonSection(
-                                    modifier = Modifier.weight(3f),
-                                    onFinishClick = {
-                                        onBackToMenu()
-                                    }
-                                )
-                            //操作ボタン
+
+                                //操作ボタン
                             } else {
                                 ActionSection(
                                     modifier = Modifier,
@@ -1133,19 +1102,90 @@ fun RunningScreen(steps: List<TimerStep>, onBackToMenu: () -> Unit) {
                                     }
                                 )
                             }
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(DarkBackgroundColor)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
 
-                            //次のメニュー
-                            NextStepSection(
-                                modifier = Modifier.weight(3f),
-                                isStarting = isStarting,
-                                currentStepIndex = currentStepIndex,
-                                steps = steps
-                            )
+                //全体の進捗
+                if (!isStarting && !isFinished) {
+                    ProgressSection(
+                        remaining = totalRemainingSeconds,
+                        total = totalMenuSeconds,
+                        isLandscape = false
 
-             */
+                    )
+                }
+                //現在のメニュー、大きなセクション
+                if (isStarting) {
+                    CountdownSection(
+                        modifier = Modifier.weight(3f),
+                        count = startDelay
+                    )
+                } else if (isFinished) {
+                    FinishSection(
+                        modifier = Modifier.weight(3f),
+                        isLandscape = false
+                    )
+                } else {
+                    CurrentStepSection(
+                        modifier = Modifier.weight(3f),
+                        currentStepIndex = currentStepIndex,
+                        isStarting = isStarting,
+                        isRunning = isRunning,
+                        steps = steps,
+                        remainingTime = remainingTime,
+                    )
+                }
+                //終了時のチェックマーク
+                if (isFinished) {
+                    FinishButtonSection(
+                        modifier = Modifier.weight(3f),
+                        onFinishClick = {
+                            onBackToMenu()
+                        }
+                    )
+                    //操作ボタン
+                } else {
+                    ActionSection(
+                        modifier = Modifier,
+                        isStarting = isStarting,
+                        isRunning = isRunning,
+                        onPlayPause = {
+                            isRunning = !isRunning
+                        },
+                        onNext = {
+                            if (currentStepIndex < steps.size - 1) {
+                                currentStepIndex++
+                                remainingTime = steps[currentStepIndex].durationSeconds
+                            } else {
+                                isFinished = true
+                                remainingTime = 0
+                            }
+                        }
+                    )
+                }
+                //次のメニュー
+                NextStepSection(
+                    modifier = Modifier.weight(3f),
+                    isStarting = isStarting,
+                    currentStepIndex = currentStepIndex,
+                    steps = steps
+                )
+            }
         }
     }
-//    }
 }
 
 @Composable
@@ -1164,17 +1204,16 @@ fun RemainingTime(
         verticalAlignment = Alignment.Bottom
     ) {
         Text(
-            String.format(Locale.US, "%02d:%02d", remaining / 60, remaining % 60),
+            String.format(Locale.US, " %02d:%02d", remaining / 60, remaining % 60),
             style = Font.XLarge,
             fontWeight = FontWeight.Black,
             color = Color.White
         )
         Text(
             String.format(Locale.US, " / %02d:%02d", total / 60, total % 60),
-            style = Font.Medium,
+            style = Font.XLarge,
             fontWeight = FontWeight.Medium,
             color = Color.Gray,
-            modifier = Modifier.padding(bottom = Dimens.Tiny, start = Dimens.Tiny)
         )
     }
 }
@@ -1229,15 +1268,14 @@ fun MenuManageScreen(
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .background(DarkBackgroundColor)
-                .padding(horizontal = Dimens.Large),
-            verticalAlignment = Alignment.Bottom
+                .background(DarkBackgroundColor),
+            verticalAlignment = Alignment.Bottom,
+            horizontalArrangement = Arrangement.spacedBy(Dimens.Medium)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth(0.5f)
                     .background(DarkBackgroundColor)
-                    .padding(horizontal = Dimens.Medium)
             ) {
                 MenuManageScreenContent1(menu)
             }
@@ -1245,7 +1283,6 @@ fun MenuManageScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(DarkBackgroundColor)
-                    .padding(horizontal = Dimens.Medium)
             ) {
                 MenuManageScreenContent2(
                     menu,
@@ -1609,35 +1646,60 @@ fun triggerStepVibration(context: Context, isEnd: Boolean) {
 
 @Composable
 private fun ProgressSection(
+    modifier: Modifier = Modifier,
     remaining: Int,
     total: Int,
+    isLandscape: Boolean
 ) {
-    val progress =
-        if (total > 0) {
-            (total - remaining).toFloat() / total.toFloat()
-        } else {
-            0f
+    if (isLandscape) {
+        Row(
+            modifier = modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            LinearProgressIndicator(
+                progress = {
+                    if (total > 0) {
+                        (total - remaining).toFloat() / total
+                    } else {
+                        0f
+                    }
+                },
+                modifier = Modifier.weight(1f),
+                color = Color.Cyan,
+                trackColor = DarkSurfaceColor
+            )
+            Text(text = "  ")
+            RemainingTime(
+                remaining = remaining,
+                total = total
+            )
         }
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        LinearProgressIndicator(
-            progress = { progress },
-            modifier = Modifier
-                .height(Dimens.Medium)
-                .clip(CircleShape)
-                .fillMaxWidth(),
-            color = Color.Cyan,
-            trackColor = DarkSurfaceColor
-        )
-        Spacer(Modifier.height(Dimens.Small))
-        RemainingTime(
-            remaining = remaining,
-            total = total,
-        )
+    } else {
+        Column(
+            modifier = modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            LinearProgressIndicator(
+                progress = {
+                    if (total > 0) {
+                        (total - remaining).toFloat() / total
+                    } else {
+                        0f
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                color = Color.Cyan,
+                trackColor = DarkSurfaceColor
+            )
+
+            RemainingTime(
+                remaining = remaining,
+                total = total
+            )
+        }
     }
 }
+
 
 @Composable
 private fun CurrentStepSection(
@@ -1879,11 +1941,12 @@ private fun CountdownSection(
 
 @Composable
 private fun FinishSection(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isLandscape: Boolean
 ) {
     Box(
         modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.BottomCenter
+        contentAlignment = if(isLandscape) Alignment.Center else Alignment.BottomCenter
     ) {
         Text(
             text = stringResource(id = R.string.finished_message),
