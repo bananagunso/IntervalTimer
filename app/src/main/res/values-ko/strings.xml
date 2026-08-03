@@ -11,6 +11,8 @@
     <string name="label_color">라벨 색상</string>
     <string name="hint_seconds">초</string>
     <string name="hint_tempo">RPM</string>
+    <string name="hint_minute">분</string>
+    <string name="hint_second">초</string>
     <string name="btn_add_step">스텝 추가</string>
     <string name="hint_menu_name">메뉴 이름</string>
     <string name="btn_save_menu">인터벌 저장</string>

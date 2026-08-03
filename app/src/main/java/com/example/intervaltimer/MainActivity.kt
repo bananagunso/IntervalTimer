@@ -493,7 +493,7 @@ fun TimerScreen(
                 //分
                 NumberTextBox(
                     value = inputMinutes.toString(),
-                    label = "分",
+                    label = stringResource(id = R.string.hint_minute),
                     maxLength = 2,
                     onValueChange = {
                         inputMinutes = it.toIntOrNull() ?: 0
@@ -505,7 +505,7 @@ fun TimerScreen(
                 //秒
                 NumberTextBox(
                     value = inputSeconds.toString(),
-                    label = "秒",
+                    label = stringResource(id = R.string.hint_second),
                     maxLength = 2,
                     onValueChange = {
                         inputSeconds = it.toIntOrNull() ?: 0

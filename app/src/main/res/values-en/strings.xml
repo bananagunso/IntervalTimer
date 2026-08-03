@@ -10,6 +10,8 @@
     <string name="hint_step_name">Step Name</string>
     <string name="label_color">Label Color</string>
     <string name="hint_seconds">Seconds</string>
+    <string name="hint_minute">Minutes</string>
+    <string name="hint_second">Seconds</string>
     <string name="hint_tempo">RPM</string>
     <string name="btn_add_step">Add Step</string>
     <string name="hint_menu_name">Menu Name</string>
