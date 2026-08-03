@@ -10,6 +10,8 @@
     <string name="hint_step_name">ステップ名</string>
     <string name="label_color">ラベルの色</string>
     <string name="hint_seconds">秒数</string>
+    <string name="hint_minute">分</string>
+    <string name="hint_second">秒</string>
     <string name="hint_tempo">RPM</string>
     <string name="btn_add_step">ステップ追加</string>
     <string name="hint_menu_name">メニュー名</string>

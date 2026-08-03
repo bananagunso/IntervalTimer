@@ -49,8 +49,6 @@ import android.widget.Toast
 import android.content.ClipboardManager
 import android.content.ClipData
 import android.content.res.Configuration
-import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.ui.draw.alpha
 import androidx.core.content.edit
 import java.util.Locale
@@ -59,6 +57,7 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalConfiguration
@@ -66,6 +65,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlin.time.Duration.Companion.milliseconds
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.KeyboardType
 import kotlin.Boolean
 
 object Dimens {
@@ -88,6 +88,7 @@ object Dimens {
     val ColorNotSelected = 40.dp
     val ColorCheck = 16.dp
     val ColorBorder = 4.dp
+    val TextBox = 56.dp
 }
 
 object Font {
@@ -280,7 +281,7 @@ fun TopScreen(
         ) {
             Text(
                 text = stringResource(id = R.string.title_interval_timer),
-                style = Font.XLarge,
+                style = Font.Large,
                 fontWeight = FontWeight.Bold,
                 color = DarkTextColor
             )
@@ -309,7 +310,7 @@ fun TopScreenButton(textRes: Int, onClick: () -> Unit) {
     ) {
         Text(
             text = stringResource(id = textRes),
-            style = Font.XLarge
+            style = Font.Large
         )
     }
 }
@@ -331,8 +332,6 @@ fun TimerScreen(
     var expanded by remember { mutableStateOf(false) }
     val tempSteps = rememberSaveable { mutableStateListOf<TimerStep>() }
     var menuName by rememberSaveable { mutableStateOf("新規トレーニング") }
-    var showTimePicker by rememberSaveable { mutableStateOf(false) }
-    var showTempoPicker by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         if (editMenuIndex in allSavedMenus.indices) {
@@ -366,13 +365,36 @@ fun TimerScreen(
         rowModifier.fillMaxSize()       // 【else以降】縦画面なら全画面
     }
 
+    if (isLandscape) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(DarkBackgroundColor)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                horizontalArrangement = Arrangement.spacedBy(Dimens.Medium)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                ) {
 
-    Row(
-        modifier = rowModifier,
-        verticalAlignment = Alignment.Bottom
-    ) {
+                }
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                ) {
+
+                }
+            }
+        }
+    } else {
         Column(
-            modifier = rowModifier
+            modifier = Modifier
+                .fillMaxSize()
         ) {
             Text(
                 text = stringResource(id = if (editMenuIndex == -1) R.string.title_create_menu else R.string.title_edit_menu),
@@ -380,14 +402,17 @@ fun TimerScreen(
                 fontWeight = FontWeight.Bold,
                 color = DarkTextColor
             )
-            Spacer(modifier = Modifier.height(Dimens.Small))
-            //ステップ名
-            Box(modifier = Modifier.fillMaxWidth()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
                 OutlinedTextField(
                     value = inputName,
                     onValueChange = { inputName = it },
-                    label = { Text(text = stringResource(id = R.string.hint_step_name)) },
-                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text(text = stringResource(id = R.string.hint_step_name)) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(Dimens.TextBox),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = Color.White,
                         unfocusedTextColor = Color.White,
@@ -420,7 +445,7 @@ fun TimerScreen(
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(Dimens.Small))
+            Spacer(modifier = Modifier.size(Dimens.Tiny))
             //カラーラベル
             Text(
                 text = stringResource(id = R.string.label_color),
@@ -430,14 +455,12 @@ fun TimerScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = Dimens.Tiny),
-                horizontalArrangement = Arrangement.spacedBy(Dimens.Tiny)
             ) {
                 colorOptions.forEachIndexed { index, color ->
                     val isSelected = (selectedIndex == index) // インデックスで比較
-
                     Box(
                         modifier = Modifier
+                            .padding(Dimens.Micro)
                             .size(if (isSelected) Dimens.ColorSelected else Dimens.ColorNotSelected)
                             .background(color, shape = CircleShape)
                             .border(
@@ -459,62 +482,58 @@ fun TimerScreen(
                     }
                 }
             }
-            //時間とRPMは横並び
+            Spacer(modifier = Modifier.size(Dimens.Small))
+
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(Dimens.Small)
+                horizontalArrangement = Arrangement.spacedBy(Dimens.Small),
+                verticalAlignment = Alignment.Bottom
             ) {
-                OutlinedButton(
-                    onClick = { showTimePicker = true },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(Dimens.XXXLarge),
-                    shape = OutlinedTextFieldDefaults.shape
-                ) {
-                    Text(text = "${inputMinutes}分 ${inputSeconds}秒", color = Color.White)
-                }
-                OutlinedButton(
-                    onClick = { showTempoPicker = true },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(Dimens.XXXLarge),
-                    shape = OutlinedTextFieldDefaults.shape
-                ) {
-                    Text(text = "$inputTempo RPM", color = Color.White)
-                }
+                //分
+                NumberTextBox(
+                    value = inputMinutes.toString(),
+                    label = "分",
+                    maxLength = 2,
+                    onValueChange = {
+                        inputMinutes = it.toIntOrNull() ?: 0
+                    },
+                    modifier = Modifier.width(55.dp)
+                )
+                Text(text = stringResource(id = R.string.hint_minute) + "  ", color = DarkTextColor)
+
+                //秒
+                NumberTextBox(
+                    value = inputSeconds.toString(),
+                    label = "秒",
+                    maxLength = 2,
+                    onValueChange = {
+                        inputSeconds = it.toIntOrNull() ?: 0
+                    },
+                    modifier = Modifier.width(55.dp)
+                )
+                Text(text = stringResource(id = R.string.hint_second) + "  ", color = DarkTextColor)
+
+                //RPM
+                NumberTextBox(
+                    value = inputTempo,
+                    label = "RPM",
+                    maxLength = 3,
+                    onValueChange = {
+                        inputTempo = it
+                    },
+                    modifier = Modifier.width(70.dp)
+                )
+                Text(text = stringResource(id = R.string.hint_tempo), color = DarkTextColor)
             }
-//時間
-            if (showTimePicker) {
-                ModalBottomSheet(
-                    onDismissRequest = { showTimePicker = false },
-                    containerColor = DarkSurfaceColor // RPMと同じ色
-                ) {
-                    TimeDrumPicker(
-                        initialMinutes = inputMinutes,
-                        initialSeconds = inputSeconds,
-                        onTimeSelected = { m, s ->
-                            inputMinutes = m
-                            inputSeconds = s
-                        }
-                    )
-                }
-            }
-//RPM
-            if (showTempoPicker) {
-                ModalBottomSheet(
-                    onDismissRequest = { showTempoPicker = false },
-                    containerColor = DarkSurfaceColor
-                ) {
-                    RpmDrumPicker(
-                        initialRpm = 85, // または現在の設定値
-                        onRpmSelected = { selectedRpm ->
-                            inputTempo = selectedRpm.toString() // ここで親の状態を更新
-                        }
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(Dimens.Small))
-//ステップ追加ボタン
+
+            Spacer(modifier = Modifier.size(Dimens.Small))
+            //ステップ追加ボタン
+            //追加できる条件
+            val canAddStep =
+                inputName.isNotBlank() &&
+                        (inputMinutes > 0 || inputSeconds > 0) &&
+                        (inputTempo.toIntOrNull() ?: 0) > 0
             Button(
                 onClick = {
                     if (inputName.isNotBlank()) {
@@ -531,33 +550,16 @@ fun TimerScreen(
                         )
                     }
                 },
+                enabled = canAddStep,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(Dimens.XXXLarge)
             ) {
                 Text(text = stringResource(id = R.string.btn_add_step))
             }
-            Spacer(modifier = Modifier.height(Dimens.Tiny))
+            Spacer(modifier = Modifier.size(Dimens.Small))
 
             if (!isLandscape) {
-                TimeScreenContent(
-                    tempSteps = tempSteps, // データを渡す
-                    menuName = menuName,
-                    onMenuNameChange = { menuName = it },
-                    allSavedMenus = allSavedMenus,
-                    editMenuIndex = editMenuIndex,
-                    onSaveFinished = onSaveFinished
-                )
-            }
-        }
-
-        if (isLandscape) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(DarkBackgroundColor)
-                    .padding(horizontal = Dimens.Medium),
-            ) {
                 TimeScreenContent(
                     tempSteps = tempSteps, // データを渡す
                     menuName = menuName,
@@ -581,17 +583,14 @@ fun TimeScreenContent(
     editMenuIndex: Int,
     onSaveFinished: () -> Unit
 ) {
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
-//            .background(DarkBackgroundColor)
-                .padding(horizontal = Dimens.Small),
         ) {
             itemsIndexed(tempSteps) { index, step ->
                 Card(
                     modifier = Modifier
-                        .padding(vertical = Dimens.Micro)
                         .fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))
                 ) {
@@ -663,22 +662,24 @@ fun TimeScreenContent(
                             )
                         }
                     }
-
                 }
+                Spacer(modifier = Modifier.size(Dimens.Tiny))
             }
         }
 //トレーニングメニュー名
         OutlinedTextField(
             value = menuName,
             onValueChange = onMenuNameChange,
-            label = { Text(text = stringResource(id = R.string.hint_menu_name)) },
-            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text(text = stringResource(id = R.string.hint_menu_name)) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(Dimens.TextBox),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedTextColor = Color.White,
                 unfocusedTextColor = Color.White
             )
         )
-        Spacer(modifier = Modifier.height(Dimens.Small))
+        Spacer(modifier = Modifier.size(Dimens.Tiny))
 //保存ボタン
         Button(
             onClick = {
@@ -694,119 +695,42 @@ fun TimeScreenContent(
                 .fillMaxWidth()
                 .height(Dimens.XXXLarge)
         ) {
-            Text(text = stringResource(id = if (editMenuIndex == -1) R.string.btn_save_menu else R.string.btn_overwrite_menu))
-        }
-    }
-}
-
-@Composable
-fun TimeDrumPicker(
-    initialMinutes: Int,
-    initialSeconds: Int,
-    onTimeSelected: (minutes: Int, seconds: Int) -> Unit
-) {
-    var minutes by rememberSaveable { mutableIntStateOf(initialMinutes) }
-    var seconds by rememberSaveable { mutableIntStateOf(initialSeconds) }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(Dimens.reel150),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically // 【重要】これで縦位置が揃います
-    ) {
-        // 分エリア（ドラム＋文字）
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            DigitWheel(0..60, minutes) {
-                minutes = it
-                onTimeSelected(minutes, seconds)
-            }
-            Text("分", color = Color.White, modifier = Modifier.padding(start = Dimens.Tiny))
-        }
-
-        // 秒エリア（ドラム＋文字）
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(start = Dimens.Medium)
-        ) {
-            DigitWheel(0..59, seconds) {
-                seconds = it
-                onTimeSelected(minutes, seconds)
-            }
-            Text("秒", color = Color.White, modifier = Modifier.padding(start = Dimens.Tiny))
-        }
-    }
-}
-
-@Composable
-fun RpmDrumPicker(
-    initialRpm: Int,
-    onRpmSelected: (Int) -> Unit
-) {
-    // 桁ごとの状態（最初は初期値から計算）
-    var hundreds by rememberSaveable { mutableIntStateOf((initialRpm / 100) % 10) }
-    var tens by rememberSaveable { mutableIntStateOf((initialRpm / 10) % 10) }
-    var ones by rememberSaveable { mutableIntStateOf(initialRpm % 10) }
-
-    // 値が変更されたら親に通知
-    LaunchedEffect(hundreds, tens, ones) {
-        val newRpm = (hundreds * 100) + (tens * 10) + ones
-        // 30未満にならないように制限
-        if (newRpm >= 30) onRpmSelected(newRpm)
-    }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(Dimens.reel150),
-        horizontalArrangement = Arrangement.Center
-    ) {
-        // 百の位 (0-2)
-        DigitWheel(range = 0..2, value = hundreds) { hundreds = it }
-        // 十の位 (0-9)
-        DigitWheel(range = 0..9, value = tens) { tens = it }
-        // 一の位 (0-9)
-        DigitWheel(range = 0..9, value = ones) { ones = it }
-    }
-}
-
-@Composable
-fun DigitWheel(
-    range: IntRange,
-    value: Int,
-    modifier: Modifier = Modifier,
-    onValueChange: (Int) -> Unit
-) {
-    // 1. スクロール状態を管理する state を作成
-    val listState = rememberLazyListState(initialFirstVisibleItemIndex = value)
-    // 2. スナップ（ピタッと止まる）動作を定義
-    val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
-    LaunchedEffect(listState.isScrollInProgress) {
-        if (!listState.isScrollInProgress) {
-            val centerIndex = listState.firstVisibleItemIndex
-            onValueChange(range.toList()[centerIndex])
-        }
-    }
-    // LazyColumn を使ってドラムのようにスクロール
-    LazyColumn(
-        state = listState, // 3. state を紐付け
-        flingBehavior = flingBehavior, // 4. ここに追加
-        modifier = modifier.height(Dimens.reel150),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        contentPadding = PaddingValues(vertical = Dimens.XXLarge) // 中央に合わせるパディング
-    ) {
-        items(range.toList()) { digit ->
-            val isSelected = (digit == value)
             Text(
-                text = digit.toString(),
-                style = if (isSelected) Font.XLarge else Font.Medium,
-                color = if (isSelected) Color.White else Color.Gray,
-                modifier = Modifier
-                    .padding(Dimens.Small)
-                    .clickable { onValueChange(digit) }
+                text = stringResource(id = if (editMenuIndex == -1) R.string.btn_save_menu else R.string.btn_overwrite_menu),
+                maxLines = 1
             )
         }
     }
+}
+
+@Composable
+fun NumberTextBox(
+    value: String,
+    label: String,
+    maxLength: Int = 2,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = { newValue ->
+            if (newValue.all { it.isDigit() } &&
+                newValue.length <= maxLength
+            ) {
+                onValueChange(newValue)
+            }
+        },
+        placeholder = { Text(label) },
+        modifier = modifier,
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number
+        ),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedTextColor = Color.White,
+            unfocusedTextColor = Color.White
+        )
+    )
 }
 
 @Composable
@@ -1946,7 +1870,7 @@ private fun FinishSection(
 ) {
     Box(
         modifier = modifier.fillMaxSize(),
-        contentAlignment = if(isLandscape) Alignment.Center else Alignment.BottomCenter
+        contentAlignment = if (isLandscape) Alignment.Center else Alignment.BottomCenter
     ) {
         Text(
             text = stringResource(id = R.string.finished_message),
