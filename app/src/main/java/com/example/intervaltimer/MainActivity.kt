@@ -280,7 +280,7 @@ fun TopScreen(
         ) {
             Text(
                 text = stringResource(id = R.string.title_interval_timer),
-                style = Font.XLarge,
+                style = Font.Large,
                 fontWeight = FontWeight.Bold,
                 color = DarkTextColor
             )
@@ -309,7 +309,7 @@ fun TopScreenButton(textRes: Int, onClick: () -> Unit) {
     ) {
         Text(
             text = stringResource(id = textRes),
-            style = Font.XLarge
+            style = Font.Large
         )
     }
 }
@@ -556,7 +556,6 @@ fun TimerScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(DarkBackgroundColor)
-                    .padding(horizontal = Dimens.Medium),
             ) {
                 TimeScreenContent(
                     tempSteps = tempSteps, // データを渡す
@@ -581,22 +580,20 @@ fun TimeScreenContent(
     editMenuIndex: Int,
     onSaveFinished: () -> Unit
 ) {
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
-//            .background(DarkBackgroundColor)
-                .padding(horizontal = Dimens.Small),
         ) {
             itemsIndexed(tempSteps) { index, step ->
                 Card(
                     modifier = Modifier
-                        .padding(vertical = Dimens.Micro)
+//                        .padding(vertical = Dimens.Micro)
                         .fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))
                 ) {
                     Row(
-                        modifier = Modifier.padding(Dimens.Tiny),
+//                        modifier = Modifier.padding(Dimens.Tiny),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Box(
@@ -694,7 +691,7 @@ fun TimeScreenContent(
                 .fillMaxWidth()
                 .height(Dimens.XXXLarge)
         ) {
-            Text(text = stringResource(id = if (editMenuIndex == -1) R.string.btn_save_menu else R.string.btn_overwrite_menu))
+            Text(text = stringResource(id = if (editMenuIndex == -1) R.string.btn_save_menu else R.string.btn_overwrite_menu),maxLines = 1)
         }
     }
 }
