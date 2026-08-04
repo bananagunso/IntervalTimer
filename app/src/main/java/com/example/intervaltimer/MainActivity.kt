@@ -57,9 +57,11 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -82,12 +84,12 @@ object Dimens {
     val PlayCircle = 80.dp
     val SkipCircle = 64.dp
     val Icon = 40.dp
-    val StartTraining = 120.dp
-    val ColorSelected = 40.dp
-    val ColorNotSelected = 40.dp
+    val StartTraining = 84.dp
+    val ColorSelected = 32.dp
+    val ColorNotSelected = 32.dp
     val ColorCheck = 16.dp
     val ColorBorder = 4.dp
-    val TextBox = 56.dp
+    val TextBox = 52.dp
 }
 
 object Font {
@@ -442,7 +444,7 @@ fun TimerScreen(
                     onInputTempoChange = { inputTempo = it },
                     tempSteps = tempSteps,
                 )
-                Spacer(modifier = Modifier.size(Dimens.Small))
+                Spacer(modifier = Modifier.size(Dimens.Tiny))
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -453,6 +455,7 @@ fun TimerScreen(
                             .weight(1f),
                         tempSteps = tempSteps, // データを渡す
                     )
+                    Spacer(modifier = Modifier.size(Dimens.Tiny))
                     TimeScreenSave(
                         modifier = Modifier,
                         tempSteps = tempSteps,
@@ -494,7 +497,7 @@ fun TimerScreenEdit(
         fontWeight = FontWeight.Bold,
         color = DarkTextColor
     )
-    Spacer(modifier = Modifier.size(Dimens.Small))
+    Spacer(modifier = Modifier.size(Dimens.Tiny))
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -648,7 +651,7 @@ fun TimerScreenEdit(
         ),
         modifier = Modifier
             .fillMaxWidth()
-            .height(Dimens.XXXLarge)
+            .height(Dimens.XXLarge)
     ) {
         Text(text = stringResource(id = R.string.btn_add_step))
     }
@@ -660,7 +663,10 @@ fun TimeScreenSteps(
     modifier: Modifier = Modifier,
     tempSteps: SnapshotStateList<TimerStep>,
 ) {
-    Column(modifier = modifier) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(percent = 5))
+    ) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
@@ -762,7 +768,7 @@ fun TimeScreenSave(
         value = menuName,
         onValueChange = onMenuNameChange,
         placeholder = { Text(text = stringResource(id = R.string.hint_menu_name)) },
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(Dimens.TextBox),
         colors = OutlinedTextFieldDefaults.colors(
@@ -784,7 +790,7 @@ fun TimeScreenSave(
         },
         modifier = Modifier
             .fillMaxWidth()
-            .height(Dimens.XXXLarge)
+            .height(Dimens.XXLarge)
     ) {
         Text(
             text = stringResource(id = if (editMenuIndex == -1) R.string.btn_save_menu else R.string.btn_overwrite_menu),
@@ -1062,8 +1068,9 @@ fun RunningScreen(steps: List<TimerStep>, onBackToMenu: () -> Unit) {
 
                     Row(
                         modifier = Modifier.fillMaxSize(),
-                        horizontalArrangement = Arrangement.spacedBy(Dimens.Medium)
-                    ) {
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.Medium),
+
+                        ) {
                         Column(
                             modifier = Modifier
                                 .weight(1f)
@@ -1072,6 +1079,7 @@ fun RunningScreen(steps: List<TimerStep>, onBackToMenu: () -> Unit) {
                             // 左半分
                             //現在のメニュー、大きなセクション
                             if (!isStarting && !isFinished) {
+                                Spacer(Modifier.height(Dimens.Tiny))
                                 CurrentStepSection(
                                     modifier = Modifier.weight(3f),
                                     currentStepIndex = currentStepIndex,
@@ -1155,6 +1163,7 @@ fun RunningScreen(steps: List<TimerStep>, onBackToMenu: () -> Unit) {
                         isLandscape = false
                     )
                 } else {
+                    Spacer(Modifier.height(Dimens.Small))
                     CurrentStepSection(
                         modifier = Modifier.weight(3f),
                         currentStepIndex = currentStepIndex,
@@ -1243,7 +1252,7 @@ fun NextStepRow(step: TimerStep, label: String) {
         colors = CardDefaults.cardColors(containerColor = step.color.copy(alpha = 0.4f))
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = Dimens.Medium, vertical = Dimens.Medium),
+            modifier = Modifier.padding(horizontal = Dimens.Medium, vertical = Dimens.Small),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -1331,7 +1340,6 @@ fun MenuManageScreen(
 
 @Composable
 fun ColumnScope.MenuManageScreenContent1(menu: TrainingMenu) {
-    val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     Text(
         menu.name,
         style = Font.XLarge,
@@ -1342,17 +1350,15 @@ fun ColumnScope.MenuManageScreenContent1(menu: TrainingMenu) {
     if (menu.steps.isEmpty()) {
         Text(text = stringResource(id = R.string.msg_no_steps), color = Color.Gray)
     } else {
-        LazyColumn(modifier = Modifier.weight(1f)) {
+        LazyColumn(
+            modifier = Modifier
+                .weight(1f)
+                .clip(RoundedCornerShape(percent = 5))
+        ) {
             items(menu.steps) { step ->
                 Card(
                     modifier = Modifier
-                        .padding(
-                            vertical = if (isLandscape) {
-                                Dimens.Micro
-                            } else {
-                                Dimens.Tiny
-                            }
-                        )
+                        .padding(Dimens.Micro)
                         .fillMaxWidth(),
                     colors = CardDefaults.cardColors(
                         containerColor = step.color.copy(
@@ -1361,27 +1367,21 @@ fun ColumnScope.MenuManageScreenContent1(menu: TrainingMenu) {
                     )
                 ) {
                     Row(
-                        modifier = Modifier.padding(
-                            if (isLandscape) {
-                                Dimens.Small
-                            } else {
-                                Dimens.Medium
-                            }
-                        ),
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier
+                            .padding(Dimens.Small), verticalAlignment = Alignment.CenterVertically
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(Dimens.Medium)
+                                .size(Dimens.Small)
                                 .background(step.color, shape = CircleShape)
                         )
-                        Spacer(modifier = Modifier.width(Dimens.Small))
+                        Spacer(modifier = Modifier.width(Dimens.Micro))
                         Text(
                             step.name,
                             modifier = Modifier.weight(1f),
                             fontWeight = FontWeight.Bold,
                             color = Color.White,
-                            style = Font.Medium
+                            style = Font.Small
                         )
                         val minutes = step.durationSeconds / 60
                         val seconds = step.durationSeconds % 60
@@ -1709,6 +1709,7 @@ private fun ProgressSection(
                 trackColor = DarkSurfaceColor
             )
 
+            Spacer(modifier = Modifier.height(Dimens.Small))
             RemainingTime(
                 remaining = remaining,
                 total = total
@@ -1768,7 +1769,6 @@ private fun CurrentStepSection(
         label = "Pulse"
     )
     val contentColor = if (baseColor.luminance() > 0.5f) Color.Black else Color.White
-    Spacer(Modifier.height(Dimens.Small))
     val alpha by animateFloatAsState(
         targetValue = if (isStarting) 0f else 1f,
         animationSpec = tween(300),
@@ -1783,7 +1783,7 @@ private fun CurrentStepSection(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight()
-                .padding(vertical = Dimens.Medium, horizontal = Dimens.Small),
+                .padding(vertical = Dimens.Medium, horizontal = Dimens.Tiny),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -1916,12 +1916,12 @@ private fun NextStepSection(
             if (next1 != null) NextStepRow(
                 step = next1,
                 label = stringResource(id = R.string.label_next)
-            ) else Spacer(Modifier.height(Dimens.Small))
+            ) else Spacer(Modifier.height(Dimens.Tiny))
             val next2 = steps.getOrNull(currentStepIndex + 2)
             if (next2 != null) NextStepRow(
                 step = next2,
                 label = stringResource(id = R.string.label_after_that)
-            ) else Spacer(Modifier.height(Dimens.Small))
+            ) else Spacer(Modifier.height(Dimens.Tiny))
         } else {
             Spacer(modifier = Modifier.fillMaxSize())
         }
@@ -1946,6 +1946,7 @@ private fun CountdownSection(
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )
+            Spacer(modifier = Modifier.height(Dimens.XLarge))
             Text(
                 text = count.toString(),
                 style = Font.CountDown,
