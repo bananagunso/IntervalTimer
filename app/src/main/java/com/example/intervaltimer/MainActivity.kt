@@ -105,7 +105,7 @@ object Font {
     val XXXLarge: TextStyle =
         TextStyle(fontSize = 56.sp, lineHeight = 64.sp, fontWeight = FontWeight.Bold)
     val CountDown: TextStyle =
-        TextStyle(fontSize = 128.sp, lineHeight = 136.sp, fontWeight = FontWeight.Bold)
+        TextStyle(fontSize = 96.sp, lineHeight = 136.sp, fontWeight = FontWeight.Bold)
 
 }
 
@@ -1032,7 +1032,7 @@ fun RunningScreen(steps: List<TimerStep>, onBackToMenu: () -> Unit) {
                 }
                 if (isStarting) {
                     CountdownSection(
-                        modifier = Modifier.weight(3f),
+                        modifier = Modifier.weight(5f),
                         count = startDelay
                     )
                     ActionSection(
@@ -1055,11 +1055,11 @@ fun RunningScreen(steps: List<TimerStep>, onBackToMenu: () -> Unit) {
 
                 } else if (isFinished) {
                     FinishSection(
-                        modifier = Modifier.weight(3f),
+                        modifier = Modifier.weight(1f),
                         isLandscape = true
                     )
                     FinishButtonSection(
-                        modifier = Modifier.weight(3f),
+                        modifier = Modifier.weight(4f),
                         onFinishClick = {
                             onBackToMenu()
                         }
@@ -1816,7 +1816,7 @@ private fun CurrentStepSection(
                     minutes,
                     seconds
                 ),
-                style = Font.XXXLarge,
+                style = Font.XXLarge,
                 fontWeight = FontWeight.ExtraBold,
                 color = contentColor,
                 maxLines = 1,
@@ -1968,7 +1968,7 @@ private fun FinishSection(
     ) {
         Text(
             text = stringResource(id = R.string.finished_message),
-            style = Font.XXXLarge,
+            style = Font.XXLarge,
             fontWeight = FontWeight.Bold,
             color = Color.White
         )
